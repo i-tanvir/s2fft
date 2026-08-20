@@ -3,6 +3,9 @@ Understanding spherical harmonics
 =================================
 
 Spherical harmonics are the spherical counterpart of Fourier waves.
+Just as Fourier modes provide a basis for representing periodic functions,
+spherical harmonics provide a basis for representing functions defined on
+the sphere.
 This tutorial introduces their main mathematical properties, visualises
 some basis functions, and shows how ''S2FFT'' decomposes a signal into
 spherical harmonic coefficients
@@ -19,27 +22,27 @@ spherical harmonic coefficients
 #
 # The spherical harmonic $Y_{lm}(\theta,\phi)$ is labelled by two integers:
 #
-# * $l=0,1,2,\dots$ is the degree, which controls its overall spatial frequency.
+# * $l=0,1,2,\dots$ is the degree, which controls its overall angular scale/spatial frequency.
 # * $m=-l,\dots,l$ is the order, which controls its variation with longitude.
 #
-# Generally, a spherical harmonic has the form
+# A spherical harmonic can be written in the form
 #
-# $Y_{lm}(\theta,\phi) = N_{lm} \ P_{l}^m(cos\theta) \ exp(im\phi)$
+# $Y_{lm}(\theta,\phi) = N_{lm} \ P_{l}^m(\cos\theta) \ \exp(im\phi)$
 #
 # where $P_{l}^m$ is an associated Legendre function and $N_{lm}$ is a normalisation constant.
-# Spherical harmonics are usually complex-valued because of the term $exp(im\phi)$.
+# Spherical harmonics are usually complex-valued because of the factor $exp(im\phi)$.
 #
 # An important property of spherical harmonics is orthonormality
 #
-# $ \langle Y_{lm},Y_{l'm'} \rangle = \int_{0}^{2\pi} \int_{0}^{\pi} Y_{lm}(\theta,\phi) \ Y^*_{l',m'}(\theta,\phi) \ sin\theta \ \mathrm{d}\theta = \delta_{ll'} \ \delta_{mm'}$
+# $ \langle Y_{lm},Y_{l'm'} \rangle = \int_{0}^{2\pi} \int_{0}^{\pi} Y_{lm}(\theta,\phi) \ Y^*_{l',m'}(\theta,\phi) \ \sin\theta \ \mathrm{d}\theta \ \mathrm{d}\phi = \delta_{ll'} \ \delta_{mm'}$
 #
 # where $*$ means complex conjugate, and $\delta$ is the Kronecker delta,
-# which is 1 when its two indices match, and 0 otherwise. In other words,
-# distint spherical harmonics have zero inner product, while every basis function
+# which equals 1 when its two indices match, and 0 otherwise. In other words,
+# distinct spherical harmonics have zero inner product, while each spherical harmonic
 # has unit inner product with itself.
 #
-# Because the spherical harmonics form a complete orthonormal basis for square-integrable
-# functions on the sphere, such a function can be expanded as
+# Spherical harmonics form a complete orthonormal basis for square-integrable functions on the sphere.
+# Therefore, a function $f(\theta,\phi) can be represented as a sum of spherical harmonics,
 #
 # $f(\theta,\phi) = \sum_{l=0}^{\infty} \sum_{m=-l}^{l} f_{lm} \ Y_{lm}(\theta,\phi)$
 # 
@@ -52,19 +55,18 @@ spherical harmonic coefficients
 # degrees $0\leq l < L$ are represented.
 #
 
-import jax # Import JAX before S2FFT so that we can enable 64-bit precision
+# Import JAX before S2FFT so that we can enable 64-bit precision
+import jax
+jax.config.update("jax_enable_x64", True)
 
-jax.config.update("jax_enable_x64", True) # Spherical harmonic transforms are numerically much more accurate in 64-bit mode
+import numpy as np
+import s2fft
+import cartopy.crs as ccrs
+from matplotlib import pyplot as plt
 
-import cartopy.crs as ccrs # Cartopy supplies map projections for displaying data sampled on a sphere.
+# Use the McEwen-Wiaux sampling with band-limit L = 32
+sampling = "mw"
+L = 32
 
-import numpy as np # NumPy is used to create and inspect arrays of harmonic coefficients.
 
-import s2fft # S2FFT supplies the forward and inverse spherical-harmonic transforms.
-
-from matplotlib import pyplot as plt # # Matplotlib supplies the plotting functions used throughout the tutorial
-
-sampling = "mw" # Use the McEwen--Wiaux sampling theorem
-
-L = 32 # The band-limit L means that degrees l=0,...,L-1 can be represented.
-
+# %%
