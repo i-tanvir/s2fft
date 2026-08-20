@@ -47,11 +47,24 @@ spherical harmonic coefficients
 # 
 # $f_{lm} = \langle f,Y_{lm} \rangle = \int_{\mathbb{S}^2} f(\theta,\phi) \ Y_{lm}^{*}(\theta,\phi) \ \mathrm{d}\Omega$
 #
+# S2FFT computes the coefficients $f_{lm}$ with a forward transform and reconstructs $f$ from
+# those coefficients with an inverse transform. We use a finite band-limit $L$, so only
+# degrees $0\leq l < L$ are represented.
 #
-#
-#
-#
-#
-#
-#
-# %%
+
+import jax # Import JAX before S2FFT so that we can enable 64-bit precision
+
+jax.config.update("jax_enable_x64", True) # Spherical harmonic transforms are numerically much more accurate in 64-bit mode
+
+import cartopy.crs as ccrs # Cartopy supplies map projections for displaying data sampled on a sphere.
+
+import numpy as np # NumPy is used to create and inspect arrays of harmonic coefficients.
+
+import s2fft # S2FFT supplies the forward and inverse spherical-harmonic transforms.
+
+from matplotlib import pyplot as plt # # Matplotlib supplies the plotting functions used throughout the tutorial
+
+sampling = "mw" # Use the McEwen--Wiaux sampling theorem
+
+L = 32 # The band-limit L means that degrees l=0,...,L-1 can be represented.
+
