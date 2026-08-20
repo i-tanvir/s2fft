@@ -24,8 +24,34 @@ spherical harmonic coefficients
 #
 # Generally, a spherical harmonic has the form
 #
-# $Y_{lm}(\theta,\phi) = N_{lm} \cdot P_{l}^m(cos\theta) \cdot exp(im\phi)$
+# $Y_{lm}(\theta,\phi) = N_{lm} \ P_{l}^m(cos\theta) \ exp(im\phi)$
 #
 # where $P_{l}^m$ is an associated Legendre function and $N_{lm}$ is a normalisation constant.
 # Spherical harmonics are usually complex-valued because of the term $exp(im\phi)$.
+#
+# An important property of spherical harmonics is orthonormality
+#
+# $ \langle Y_{lm},Y_{l'm'} \rangle = \int_{0}^{2\pi} \int_{0}^{\pi} Y_{lm}(\theta,\phi) \ Y^*_{l',m'}(\theta,\phi) \ sin\theta \ \mathrm{d}\theta = \delta_{ll'} \ \delta_{mm'}$
+#
+# where $*$ means complex conjugate, and $\delta$ is the Kronecker delta,
+# which is 1 when its two indices match, and 0 otherwise. In other words,
+# distint spherical harmonics have zero inner product, while every basis function
+# has unit inner product with itself.
+#
+# Because the spherical harmonics form a complete orthonormal basis for square-integrable
+# functions on the sphere, such a function can be expanded as
+#
+# $f(\theta,\phi) = \sum_{l=0}^{\infty} \sum_{m=-l}^{l} f_{lm} \ Y_{lm}(\theta,\phi)$
+# 
+# with coefficients
+# 
+# $f_{lm} = \langle f,Y_{lm} \rangle = \int_{\mathbb{S}^2} f(\theta,\phi) \ Y_{lm}^{*}(\theta,\phi) \ \mathrm{d}\Omega$
+#
+#
+#
+#
+#
+#
+#
+#
 # %%
