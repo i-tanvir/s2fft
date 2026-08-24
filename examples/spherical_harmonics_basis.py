@@ -22,7 +22,7 @@ spherical harmonic coefficients.
 # [meridian](https://en.wikipedia.org/wiki/Meridian_(geography)).
 #
 # We write a signal on the sphere as $f(\theta,\phi)$. Depending on the application,
-# it could represent quantities such as temperature, elevation, radiation intensity, etc.
+# it could represent quantities such as temperature, elevation, or radiation intensity.
 
 # %% [markdown]
 # ## Spherical harmonics
@@ -38,7 +38,7 @@ spherical harmonic coefficients.
 #
 # $$
 # Y_{\ell m}(\theta,\phi)
-# = N_{\ell m} P_{\ell}^m(\cos\theta) \exp(i m\phi)
+# = N_{\ell m} P_{\ell}^m(\cos\theta) \exp(i m\phi),
 # $$
 # 
 # where $P_{\ell}^m$ is an [associated Legendre polynomial](https://en.wikipedia.org/wiki/Associated_Legendre_polynomials)
@@ -56,11 +56,11 @@ spherical harmonic coefficients.
 # f(\theta,\phi) g^{*}(\theta,\phi) \sin\theta \ \mathrm{d}\theta \mathrm{d}\phi.
 # $$
 #
-# Here, $*$ denotes complex conjugation. The factor $\sin\theta$ comes from the 
-# [differential area element in spherical coordinates.](https://en.wikipedia.org/wiki/Spherical_coordinate_system#Integration_and_differentiation_in_spherical_coordinates)
+# Here, $*$ denotes complex conjugation. The factor $\sin\theta$ arises from the 
+# [solid-angle element in spherical coordinates](https://en.wikipedia.org/wiki/Spherical_coordinate_system#Integration_and_differentiation_in_spherical_coordinates):
 # 
 # $$
-# \mathrm{d}\Omega = \sin\theta \mathrm{d}\theta \mathrm{d}\phi
+# \mathrm{d}\Omega = \sin\theta \mathrm{d}\theta \mathrm{d}\phi.
 # $$
 #
 # The spherical harmonics are orthonormal with respect to the inner product:
@@ -69,21 +69,21 @@ spherical harmonic coefficients.
 # \langle Y_{\ell m},Y_{\ell' m'}\rangle
 # = \int_{\mathbb{S}^{2}}
 # Y_{\ell m}(\theta,\phi) Y^{*}_{\ell' m'}(\theta,\phi) \ \mathrm{d}\Omega
-# = \delta_{\ell \ell'} \delta_{m m'}
+# = \delta_{\ell \ell'} \delta_{m m'}.
 # $$
 # 
-# The Kronecker delta $\delta_{ab}$ is one when $a=b$ and zero otherwise. Consequently,
-# distinct spherucal harmonics have zero inner product, while every spherical harmonic
+# The Kronecker delta $\delta_{ab}$ equals one when $a=b$ and zero otherwise. Consequently,
+# distinct spherical harmonics have zero inner product, while each spherical harmonic
 # has unit inner product with itself.
 #
-# The spherical harmonics also form a complete basis for the space $L^{2}(\mathbb{S}^{2})$
-# of square-integrable functions on the sphere. A signal in this space can therefore be
-# expanded as
+# The spherical harmonics also form a complete basis for $L^{2}(\mathbb{S}^{2})$,
+# the space of square-integrable functions on the sphere. Any signal in this space can therefore
+# be expanded as
 # 
 # $$
 # f(\theta,\phi)
 # = \sum_{\ell=0}^{\infty} \sum_{m=-\ell}^{\ell}
-# f_{\ell m} Y_{\ell m}(\theta,\phi)
+# f_{\ell m} Y_{\ell m}(\theta,\phi),
 # $$
 # 
 # where orthonormality allows each coefficient to be isolated by an inner product:
@@ -92,11 +92,12 @@ spherical harmonic coefficients.
 # f_{\ell m}
 # = \langle f,Y_{\ell m}\rangle
 # = \int_{\mathbb{S}^{2}}
-# f(\theta,\phi) Y^{*}_{\ell m}(\theta,\phi) \ \mathrm{d}\Omega
+# f(\theta,\phi) Y^{*}_{\ell m}(\theta,\phi) \ \mathrm{d}\Omega.
 # $$
 # 
-# Computing the coeffiecients $f_{\ell m}$ is the forward spherical harmonic transform.
-# Reconstruction $f$ from those coefficients is the inverse transform
+# Computing the coefficients $f_{\ell m}$ is called the forward spherical harmonic transform,
+# or spherical harmonic analysis. Reconstructing $f$ from these coefficients is called the
+# inverse spherical harmonic transform, or spherical harmonic synthesis.
 # 
 
 
