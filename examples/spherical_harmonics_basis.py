@@ -98,16 +98,35 @@ spherical harmonic coefficients.
 # Computing the coefficients $f_{\ell m}$ is called the forward spherical harmonic transform,
 # or spherical harmonic analysis. Reconstructing $f$ from these coefficients is called the
 # inverse spherical harmonic transform, or spherical harmonic synthesis.
+
+# %% [markdown]
+# ## Band-limited signals
 # 
-
-
-
-
-
-
-
-
-
-
-
+# S2FFT computes transforms for signals with a finite harmonic band-limit $L$. A signal is
+# band-limited at $L$ if $f_{\ell m}=0$ for every $\ell \geq L$. Its expansion then becomes
+# the finite sum
+#
+# $$
+# f(\theta,\phi)
+# = \sum_{\ell=0}^{L-1} \sum_{m=-\ell}^{\ell}
+# f_{\ell m} Y_{\ell m}(\theta,\phi).
+# $$
+# 
+# Increasing $L$ allows finer angular structure to be represented, but also increases the
+# number of coefficients and the computational cost of the transforms.
+# 
+# There are $\sum_{\ell=0}^{L-1}(2\ell +1)=L^{2}$ valid spherical harmonic coefficients.
+# A sampling theorem specifies a finite set of sample locations from which a band-limited signal
+# can be represented and transformed exactly, up to numerical precision. Here we use the [McEwen-Wiaux](https://arxiv.org/abs/1110.6298)
+# sampling scheme.
+# 
+# 
+# 
+# 
+# 
+# 
+# 
+# 
+# 
+# 
 # %%
