@@ -139,3 +139,19 @@ import s2fft
 
 L = 32
 sampling = "mw"
+
+# %% [markdown]
+# ## How S2FFT stores harmonic coefficients
+#
+# S2FFT stores coefficients in an array `flm` of shape `(L, 2*L-1}`. The first array
+# index corresponds directly to the degree $\ell$. The order $m$ is shifted by $L-1$ so that
+# its negative and positive values can be represented by standard non-negative array indices:
+#
+# $$
+# f_{\ell m} \quad \longleftrightarrow \quad
+# \mathtt{flm[\ell,\ L-1+m]}.
+# $$
+#
+# Thus, $m=0$ is stored in the central column with index $L-1$. The rectangular array also contains
+# entries for which $|m|>\ell$. These do not correspond to valid spherical harmonics and are
+# kept as zero.
