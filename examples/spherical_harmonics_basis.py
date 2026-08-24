@@ -126,3 +126,16 @@ spherical harmonic coefficients.
 # A sampling theorem specifies a finite set of sample locations from which a band-limited signal
 # can be represented and transformed exactly, up to numerical precision. Here we use the [McEwen-Wiaux](https://arxiv.org/abs/1110.6298)
 # sampling scheme.
+
+# %%
+import jax
+jax.config.update("jax_enable_x64", True)
+
+import cartopy.crs as ccrs
+import numpy as np
+from matplotlib import pyplot as plt
+
+import s2fft
+
+L = 32
+sampling = "mw"
