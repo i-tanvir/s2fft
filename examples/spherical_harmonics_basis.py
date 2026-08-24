@@ -112,21 +112,17 @@ spherical harmonic coefficients.
 # f_{\ell m} Y_{\ell m}(\theta,\phi).
 # $$
 # 
-# Increasing $L$ allows finer angular structure to be represented, but also increases the
-# number of coefficients and the computational cost of the transforms.
+# The largest degree represented is therefore $L-1$. Increasing $L$ allows finer angular
+# structure to be represented, but also increases the number of coefficients and the
+# computational cost of the transforms.
 # 
-# There are $\sum_{\ell=0}^{L-1}(2\ell +1)=L^{2}$ valid spherical harmonic coefficients.
+# There are
+#
+# $$
+# \sum_{\ell=0}^{L-1}(2\ell +1)=L^{2}
+# $$
+# 
+# valid spherical harmonic coefficients.
 # A sampling theorem specifies a finite set of sample locations from which a band-limited signal
 # can be represented and transformed exactly, up to numerical precision. Here we use the [McEwen-Wiaux](https://arxiv.org/abs/1110.6298)
 # sampling scheme.
-# 
-# 
-# 
-# 
-# 
-# 
-# 
-# 
-# 
-# 
-# %%
