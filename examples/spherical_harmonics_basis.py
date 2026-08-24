@@ -153,5 +153,7 @@ sampling = "mw"
 # $$
 #
 # Thus, $m=0$ is stored in the central column with index $L-1$. The rectangular array also contains
-# entries for which $|m|>\ell$. These do not correspond to valid spherical harmonics and are
-# kept as zero.
+# entries for which $|m|>\ell$. These do not correspond to valid spherical harmonic coefficients
+# and are kept at zero.
+
+# %%
