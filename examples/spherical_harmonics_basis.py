@@ -46,11 +46,14 @@ spherical harmonic coefficients.
 # %% [markdown]
 # ## Orthonormality
 #
-# The surface-area element on the unit sphere, also called the solid-angle element, is
+# The surface-area element on the unit sphere, also called the [solid-angle element](https://en.wikipedia.org/wiki/Spherical_coordinate_system#Integration_and_differentiation_in_spherical_coordinates),
+# is 
+# 
+# $$
+# \mathrm{d}\Omega = \sin\theta \ \mathrm{d}\theta \mathrm{d}\phi.
+# $$
 #
-# $$
-# \mathrm{d}\Omega = \sin\theta \mathrm{d}\theta \mathrm{d}\phi.
-# $$
+# The factor $\sin\theta$ comes from expressing surface area in spherical coordinates.
 #
 # For two square-integrable functions $f$ and $g$, the inner product on the sphere is
 #
@@ -60,8 +63,7 @@ spherical harmonic coefficients.
 # f(\theta,\phi) g^{*}(\theta,\phi) \ \mathrm{d}\Omega.
 # $$
 #
-# Here, $*$ denotes complex conjugation. The factor $\sin\theta$ in
-# $\mathrm{d}\Omega$ arises from the [solid-angle element in spherical coordinates](https://en.wikipedia.org/wiki/Spherical_coordinate_system#Integration_and_differentiation_in_spherical_coordinates).
+# Here, $*$ denotes complex conjugation.
 #
 # The spherical harmonics are orthonormal with respect to the inner product:
 #
@@ -120,7 +122,7 @@ spherical harmonic coefficients.
 # computational cost of the transforms.
 #
 # A sampling theorem specifies a finite set of sample locations at which a band-limited signal
-# can be represented and transformed exactly, up to numerical precision. Here we use the [McEwen-Wiaux](https://arxiv.org/abs/1110.6298)
+# can be represented and transformed exactly, up to numerical precision. Here we use the [McEwen-Wiaux (2012)](https://arxiv.org/abs/1110.6298)
 # sampling scheme.
 
 # %%
