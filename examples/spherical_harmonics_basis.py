@@ -243,6 +243,7 @@ for ell in range(maximum_degree + 1):
             cmap="viridis",
         )
         ax.set_title(rf"$\ell={ell},\ m={m}$", fontsize=9)
+
 plt.show()
 
 # %% [markdown]
@@ -250,3 +251,52 @@ plt.show()
 # Moving across a row changes $m$ and therefore the variation with longitude.
 # When $m=0$, the harmonic does not vary with longitude.
 
+# %% [markdown]
+# Decomposing a signal into spherical harmonics
+#
+# A band-limited signal is a weighted sum of spherical harmonic basis functions.
+# To demonstrate this, we construct a signal with three non-zero coefficients:
+#
+# $$
+# f(\theta, \phi)
+# = Y_{0,0}(\theta,\phi)
+# + 0.75Y_{2,1}(\theta,\phi)
+# - 0.5Y_{3,-2}(\theta,\phi).
+# $$
+# 
+# The inverse transform, evaluates this weighted sum at the MW sampling nodes.
+
+# %%
+signal_flm = np.zeros(
+    s2fft.sampling.s2_samples.flm_shape(L),
+    dtype=np.complex128,
+)
+signal_flm[0, L - 1] = 1.0
+signal_flm[2, L - 1 + 1] = 0.75
+signal_flm[3, L - 1 - 2] = -0.5
+
+signal = s2fft.inverse(
+    signal_flm,
+    L=L,
+    sampling=sampling,
+    method="jax",
+    reality=False,
+)
+
+# %% [markdown]
+# The signal is generally complex-valued because the spherical harmonic basis
+# functions are complex-valued. As before, we visualise its real part.
+
+# %%
+fig, ax = plt.subplots(
+    figsize=(6,4),
+    subplot_kw={"projection": ccrs.Mollweide()},
+)
+
+ax.imshow(
+    signal.real,
+    transform=ccrs.PlateCarree(),
+    cmap="viridis", 
+)
+
+plt.show()
