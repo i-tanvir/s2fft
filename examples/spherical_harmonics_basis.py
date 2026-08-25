@@ -26,13 +26,11 @@ spherical harmonic coefficients.
 
 # %% [markdown]
 # ## Spherical harmonics
-# 
+#
 # The spherical harmonic $Y_{\ell m}(\theta,\phi)$ is indexed by two integers:
 #
-# * The degree $\ell=0,1,2,\dots$ controls its overall angular scale. Larger values of $\ell$
-# correspond to finer angular structure.
-# * The order $m=-\ell,\dots,\ell$ controls its variation with longitude. Larger values of ∣m∣
-# correspond to more rapid longitudinal oscillations.
+# * The degree $\ell=0,1,2,\dots$ controls its overall angular scale.
+# * The order $m=-\ell,\dots,\ell$ controls its variation with longitude.
 #
 # A spherical harmonic can be written as
 #
@@ -40,28 +38,30 @@ spherical harmonic coefficients.
 # Y_{\ell m}(\theta,\phi)
 # = N_{\ell m} P_{\ell}^m(\cos\theta) \exp(i m\phi),
 # $$
-# 
+#
 # where $P_{\ell}^m$ is an [associated Legendre polynomial](https://en.wikipedia.org/wiki/Associated_Legendre_polynomials)
 # and $N_{\ell m}$ is a normalisation constant. The factor $\exp(i m\phi)$ means
 # that spherical harmonics are generally complex-valued.
 
 # %% [markdown]
-# ## Orthonormality and completeness
+# ## Orthonormality
 #
-# For two square-integrable functions $f$ and $g$, the inner product on the sphere is
-# 
-# $$
-# \langle f,g\rangle
-# = \int_{0}^{2\pi}\int_{0}^{\pi}
-# f(\theta,\phi) g^{*}(\theta,\phi) \sin\theta \ \mathrm{d}\theta \mathrm{d}\phi.
-# $$
+# The surface-area element on the unit sphere, also called the solid-angle element, is
 #
-# Here, $*$ denotes complex conjugation. The factor $\sin\theta$ arises from the 
-# [solid-angle element in spherical coordinates](https://en.wikipedia.org/wiki/Spherical_coordinate_system#Integration_and_differentiation_in_spherical_coordinates):
-# 
 # $$
 # \mathrm{d}\Omega = \sin\theta \mathrm{d}\theta \mathrm{d}\phi.
 # $$
+#
+# For two square-integrable functions $f$ and $g$, the inner product on the sphere is
+#
+# $$
+# \langle f,g\rangle
+# = \int_{\mathbb{S}^{2}}
+# f(\theta,\phi) g^{*}(\theta,\phi) \ \mathrm{d}\Omega.
+# $$
+#
+# Here, $*$ denotes complex conjugation. The factor $\sin\theta$ in
+# $\mathrm{d}\Omega$ arises from the [solid-angle element in spherical coordinates](https://en.wikipedia.org/wiki/Spherical_coordinate_system#Integration_and_differentiation_in_spherical_coordinates).
 #
 # The spherical harmonics are orthonormal with respect to the inner product:
 #
@@ -71,37 +71,40 @@ spherical harmonic coefficients.
 # Y_{\ell m}(\theta,\phi) Y^{*}_{\ell' m'}(\theta,\phi) \ \mathrm{d}\Omega
 # = \delta_{\ell \ell'} \delta_{m m'}.
 # $$
-# 
+#
 # The Kronecker delta $\delta_{ab}$ equals one when $a=b$ and zero otherwise. Consequently,
 # distinct spherical harmonics have zero inner product, while each spherical harmonic
 # has unit inner product with itself.
+
+# %% [markdown]
+# ## Expanding a signal in spherical harmonics
 #
-# The spherical harmonics also form a complete basis for $L^{2}(\mathbb{S}^{2})$,
-# the space of square-integrable functions on the sphere. Any signal in this space can therefore
-# be expanded as
-# 
+# The spherical harmonics form a complete basis for $L^{2}(\mathbb{S}^{2})$,
+# the space of [square-integrable functions](https://en.wikipedia.org/wiki/Square-integrable_function)
+# on the sphere. Any signal in this space can therefore be expanded as
+#
 # $$
 # f(\theta,\phi)
 # = \sum_{\ell=0}^{\infty} \sum_{m=-\ell}^{\ell}
 # f_{\ell m} Y_{\ell m}(\theta,\phi),
 # $$
-# 
+#
 # where orthonormality allows each coefficient to be isolated by an inner product:
-# 
+#
 # $$
 # f_{\ell m}
 # = \langle f,Y_{\ell m}\rangle
 # = \int_{\mathbb{S}^{2}}
 # f(\theta,\phi) Y^{*}_{\ell m}(\theta,\phi) \ \mathrm{d}\Omega.
 # $$
-# 
+#
 # Computing the coefficients $f_{\ell m}$ is called the forward spherical harmonic transform,
 # or spherical harmonic analysis. Reconstructing $f$ from these coefficients is called the
 # inverse spherical harmonic transform, or spherical harmonic synthesis.
 
 # %% [markdown]
 # ## Band-limited signals
-# 
+#
 # S2FFT computes transforms for signals with a finite harmonic band-limit $L$. A signal is
 # band-limited at $L$ if $f_{\ell m}=0$ for every $\ell \geq L$. Its expansion then becomes
 # the finite sum
@@ -111,17 +114,17 @@ spherical harmonic coefficients.
 # = \sum_{\ell=0}^{L-1} \sum_{m=-\ell}^{\ell}
 # f_{\ell m} Y_{\ell m}(\theta,\phi).
 # $$
-# 
+#
 # The largest degree represented is therefore $L-1$. Increasing $L$ allows finer angular
 # structure to be represented, but also increases the number of coefficients and the
 # computational cost of the transforms.
-# 
+#
 # There are
 #
 # $$
 # \sum_{\ell=0}^{L-1}(2\ell +1)=L^{2}
 # $$
-# 
+#
 # valid spherical harmonic coefficients.
 # A sampling theorem specifies a finite set of sample locations from which a band-limited signal
 # can be represented and transformed exactly, up to numerical precision. Here we use the [McEwen-Wiaux](https://arxiv.org/abs/1110.6298)
@@ -157,3 +160,93 @@ sampling = "mw"
 # and are kept at zero.
 
 # %%
+# Choose a valid degree and order: 0 <= ell < L, and -ell <= m <= ell.
+ell = 2
+m = 1
+
+# Set all coefficients to zero, then set f_{ell m} = 1.
+flm = np.zeros(s2fft.sampling.s2_samples.flm_shape(L), dtype=np.complex128)
+flm[ell, L-1+m] = 1.0
+
+# Since this is the only non-zero coefficient, the inverse transform evaluates
+# Y_{ell m} at the MW sampling nodes.
+y_ell_m = s2fft.inverse(
+    flm,
+    L=L,
+    sampling=sampling,
+    method="jax",
+    reality=False,
+)
+
+# %% [markdown]
+# Spherical harmonics are generally complex-valued, so here we visualise the
+# real part.
+
+# %%
+fig, ax = plt.subplots(
+    figsize=(4, 2),
+    subplot_kw={"projection": ccrs.Mollweide()},
+)
+
+ax.imshow(
+    y_ell_m.real,
+    transform=ccrs.PlateCarree(),
+    cmap="viridis",
+)
+ax.set_title(rf"$\ell={ell},\ m={m}$")
+
+plt.show()
+
+# %% [markdown]
+# ## Visualising the basis
+#
+# We can repeat the same construction, setting one coefficient to one and all
+# remaining coefficients to zero, for every valid degree and order $(\ell,m)$
+# up to a chosen maximum degree.
+
+# %%
+maximum_degree = 3
+
+fig, axes = plt.subplots(
+    maximum_degree + 1,
+    2 * maximum_degree + 1,
+    figsize=(12, 6),
+    subplot_kw={"projection": ccrs.Mollweide()},
+)
+
+for ell in range(maximum_degree + 1):
+    for m in range(-maximum_degree, maximum_degree + 1):
+        ax = axes[ell, m + maximum_degree]
+
+        # Hide positions that do not correspond to a valid order.
+        if abs(m) > ell:
+            ax.set_axis_off()
+            continue
+
+        flm = np.zeros(
+            s2fft.sampling.s2_samples.flm_shape(L),
+            dtype=np.complex128,
+        )
+        flm[ell, L - 1 + m] = 1.0
+
+        basis_function = s2fft.inverse(
+            flm,
+            L=L,
+            sampling=sampling,
+            method="jax",
+            reality=False,
+        )
+
+        ax.imshow(
+            basis_function.real,
+            transform=ccrs.PlateCarree(),
+            cmap="viridis",
+        )
+        ax.set_title(rf"$\ell={ell},\ m={m}$", fontsize=9)
+plt.show()
+
+# %% [markdown]
+# Moving down the rows increases $\ell$, producing finer angular structure.
+# Moving across a row changes $m$ and therefore the variation with longitude.
+# When $m=0$, the harmonic does not vary with longitude.
+
