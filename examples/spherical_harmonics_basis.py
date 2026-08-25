@@ -107,7 +107,7 @@ spherical harmonic coefficients.
 # %% [markdown]
 # ## Band-limited signals
 #
-# S2FFT computes transforms for signals with a finite harmonic band-limit $L$. A signal is
+# `S2FFT` computes transforms for signals with a finite harmonic band-limit $L$. A signal is
 # band-limited at $L$ if $f_{\ell m}=0$ for every $\ell \geq L$. Its expansion then becomes
 # the finite sum
 #
@@ -147,7 +147,7 @@ sampling = "mw"
 #
 # $$
 # f_{\ell m} \quad \longleftrightarrow \quad
-# \mathtt{flm[\ell,\ L-1+m]}.
+# \mathtt{flm[\ell,\ m+L-1]}.
 # $$
 #
 # Thus, $m=0$ is stored in the central column with index $L-1$. The rectangular array also contains
@@ -161,7 +161,7 @@ m = 1
 
 # Set all coefficients to zero, then set f_{ell m} = 1.
 flm = np.zeros(s2fft.sampling.s2_samples.flm_shape(L), dtype=np.complex128)
-flm[ell, L-1+m] = 1.0
+flm[ell, m + L - 1] = 1.0
 
 # %% [markdown]
 # Since $f_{\ell m}=1$ is the only non-zero coefficient, the spherical harmonic
@@ -190,7 +190,7 @@ y_ell_m = s2fft.inverse(
 
 # %%
 fig, ax = plt.subplots(
-    figsize=(4, 2),
+    figsize=(3, 1.5),
     subplot_kw={"projection": ccrs.Mollweide()},
 )
 
@@ -215,7 +215,7 @@ maximum_degree = 3
 fig, axes = plt.subplots(
     maximum_degree + 1,
     2 * maximum_degree + 1,
-    figsize=(12, 6),
+    figsize=(16, 8),
     subplot_kw={"projection": ccrs.Mollweide()},
 )
 
@@ -232,9 +232,9 @@ for ell in range(maximum_degree + 1):
             s2fft.sampling.s2_samples.flm_shape(L),
             dtype=np.complex128,
         )
-        flm[ell, L - 1 + m] = 1.0
+        flm[ell, m + L - 1] = 1.0
 
-        basis_function = s2fft.inverse(
+        y_ell_m = s2fft.inverse(
             flm,
             L=L,
             sampling=sampling,
@@ -243,7 +243,7 @@ for ell in range(maximum_degree + 1):
         )
 
         ax.imshow(
-            basis_function.real,
+            y_ell_m.real,
             transform=ccrs.PlateCarree(),
             cmap="viridis",
         )
@@ -276,9 +276,9 @@ signal_flm = np.zeros(
     s2fft.sampling.s2_samples.flm_shape(L),
     dtype=np.complex128,
 )
-signal_flm[0, L - 1] = 1.0
-signal_flm[2, L - 1 + 1] = 0.75
-signal_flm[3, L - 1 - 2] = -0.5
+signal_flm[0, 0 + L - 1] = 1.0
+signal_flm[2, 1 + L - 1] = 0.8
+signal_flm[3, -2 + L - 1] = -0.4
 
 signal = s2fft.inverse(
     signal_flm,
@@ -293,7 +293,7 @@ signal = s2fft.inverse(
 
 # %%
 fig, ax = plt.subplots(
-    figsize=(6,4),
+    figsize=(3,1.5),
     subplot_kw={"projection": ccrs.Mollweide()},
 )
 
@@ -302,6 +302,7 @@ ax.imshow(
     transform=ccrs.PlateCarree(),
     cmap="viridis", 
 )
+ax.set_title(r"$f(\theta,\phi)$")
 
 plt.show()
 
@@ -335,15 +336,20 @@ coefficient_magnitudes = np.abs(
 )
 
 fig, ax = plt.subplots(figsize=(7,4))
-ax.imshow(
+im = ax.imshow(
     coefficient_magnitudes,
-    origin="lower",
     cmap="viridis",
 )
 ax.set_xlabel(r"$m$")
 ax.set_ylabel(r"$\ell$")
 ax.set_xticks(np.arange(len(m_values)), labels=m_values)
 ax.set_yticks(np.arange(maximum_degree + 1))
+
+cbar = fig.colorbar(im,
+                    ax=ax,
+                    label=r"$|f_{\ell m}|$",
+                    shrink=0.8,
+)
 
 plt.show()
 
