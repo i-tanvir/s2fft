@@ -73,13 +73,13 @@ spherical harmonic coefficients.
 # $$
 #
 # The Kronecker delta $\delta_{ab}$ equals one when $a=b$ and zero otherwise. Consequently,
-# distinct spherical harmonics have zero inner product, while each spherical harmonic
-# has unit inner product with itself.
+# distinct spherical harmonics have zero inner product, while the inner product of a spherical
+# harmonic with itself is one.
 
 # %% [markdown]
 # ## Expanding a signal in spherical harmonics
 #
-# The spherical harmonics form a complete basis for $L^{2}(\mathbb{S}^{2})$,
+# The spherical harmonics form a complete orthonormal basis for $L^{2}(\mathbb{S}^{2})$,
 # the space of [square-integrable functions](https://en.wikipedia.org/wiki/Square-integrable_function)
 # on the sphere. Any signal in this space can therefore be expanded as
 #
@@ -119,14 +119,7 @@ spherical harmonic coefficients.
 # structure to be represented, but also increases the number of coefficients and the
 # computational cost of the transforms.
 #
-# There are
-#
-# $$
-# \sum_{\ell=0}^{L-1}(2\ell +1)=L^{2}
-# $$
-#
-# valid spherical harmonic coefficients.
-# A sampling theorem specifies a finite set of sample locations from which a band-limited signal
+# A sampling theorem specifies a finite set of sample locations at which a band-limited signal
 # can be represented and transformed exactly, up to numerical precision. Here we use the [McEwen-Wiaux](https://arxiv.org/abs/1110.6298)
 # sampling scheme.
 
@@ -146,7 +139,7 @@ sampling = "mw"
 # %% [markdown]
 # ## How S2FFT stores harmonic coefficients
 #
-# S2FFT stores coefficients in an array `flm` of shape `(L, 2*L-1}`. The first array
+# S2FFT stores coefficients in an array `flm` of shape `(L, 2 * L - 1)`. The first array
 # index corresponds directly to the degree $\ell$. The order $m$ is shifted by $L-1$ so that
 # its negative and positive values can be represented by standard non-negative array indices:
 #
@@ -168,8 +161,20 @@ m = 1
 flm = np.zeros(s2fft.sampling.s2_samples.flm_shape(L), dtype=np.complex128)
 flm[ell, L-1+m] = 1.0
 
-# Since this is the only non-zero coefficient, the inverse transform evaluates
-# Y_{ell m} at the MW sampling nodes.
+# %% [markdown]
+# Since $f_{\ell m}=1$ is the only non-zero coefficient, the spherical harmonic
+# expansion reduces to
+#
+# $$
+# f(\theta,\phi)
+# = 1 \cdot Y_{\ell m}(\theta,\phi)
+# = Y_{\ell m}(\theta,\phi).
+# $$
+#
+# The inverse transform therefore evaluates the chosen basis function at the
+# MW sample locations.
+
+# %%
 y_ell_m = s2fft.inverse(
     flm,
     L=L,
@@ -179,8 +184,7 @@ y_ell_m = s2fft.inverse(
 )
 
 # %% [markdown]
-# Spherical harmonics are generally complex-valued, so here we visualise the
-# real part.
+# Spherical harmonics are generally complex-valued, so we visualise the real part.
 
 # %%
 fig, ax = plt.subplots(
@@ -200,9 +204,8 @@ plt.show()
 # %% [markdown]
 # ## Visualising the basis
 #
-# We can repeat the same construction, setting one coefficient to one and all
-# remaining coefficients to zero, for every valid degree and order $(\ell,m)$
-# up to a chosen maximum degree.
+# We can repeat this one-hot coefficient construction for every valid degree
+# and order $(\ell,m)$ up to a chosen maximum degree.
 
 # %%
 maximum_degree = 3
@@ -252,7 +255,7 @@ plt.show()
 # When $m=0$, the harmonic does not vary with longitude.
 
 # %% [markdown]
-# Decomposing a signal into spherical harmonics
+# ## Decomposing a signal into spherical harmonics
 #
 # A band-limited signal is a weighted sum of spherical harmonic basis functions.
 # To demonstrate this, we construct a signal with three non-zero coefficients:
@@ -284,8 +287,7 @@ signal = s2fft.inverse(
 )
 
 # %% [markdown]
-# The signal is generally complex-valued because the spherical harmonic basis
-# functions are complex-valued. As before, we visualise its real part.
+# As before, we visualise its real part.
 
 # %%
 fig, ax = plt.subplots(
@@ -301,11 +303,11 @@ ax.imshow(
 
 plt.show()
 
-# %%
+# %% [markdown]
 # ## Recovering the spherical harmonic coefficients
 #
-# Starting from the sampled signal, the forward transform recovers the weight
-# of each basis function.
+# Starting from the sampled signal, the forward transform recovers its
+# spherical harmonic coefficients, which are the weights of the basis functions.
 
 # %%
 recovered_flm = s2fft.forward(
@@ -318,7 +320,7 @@ recovered_flm = s2fft.forward(
 
 # %% [markdown]
 # We display the magnitudes of the recovered coefficients up to degree three.
-# The non zero entries should occur at the same degree and order pairs used
+# The non-zero entries should occur at the same degree and order pairs used
 # to construct the signal.
 
 # %%
@@ -336,17 +338,17 @@ ax.imshow(
     origin="lower",
     cmap="viridis",
 )
-ax.set_xlabel(r"Order $m$")
-ax.set_ylabel(r"Degree $\ell$")
+ax.set_xlabel(r"$m$")
+ax.set_ylabel(r"$\ell$")
 ax.set_xticks(np.arange(len(m_values)), labels=m_values)
 ax.set_yticks(np.arange(maximum_degree + 1))
 
 plt.show()
+
 # %% [markdown]
-# Finally, we compare the recovered coefficients with those used to construct
-# the signal. For the MW sampling scheme, the error should be close to
-# machine precision.
+# Finally, we compare the recovered coefficients with the original coefficients.
+# For the MW sampling scheme, the error should be close to machine precision.
 
 # %%
 maximum_error = np.max(np.abs(recovered_flm - signal_flm))
-print(f"Maximum coefficient error: {maximum_error}")
+print(f"Maximum coefficient error: {maximum_error:.2e}")
