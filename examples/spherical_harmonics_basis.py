@@ -264,7 +264,7 @@ plt.show()
 # - 0.5Y_{3,-2}(\theta,\phi).
 # $$
 # 
-# The inverse transform, evaluates this weighted sum at the MW sampling nodes.
+# The inverse transform evaluates this weighted sum at the MW sampling nodes.
 
 # %%
 signal_flm = np.zeros(
@@ -300,3 +300,53 @@ ax.imshow(
 )
 
 plt.show()
+
+# %%
+# ## Recovering the spherical harmonic coefficients
+#
+# Starting from the sampled signal, the forward transform recovers the weight
+# of each basis function.
+
+# %%
+recovered_flm = s2fft.forward(
+    signal,
+    L=L,
+    sampling=sampling,
+    method="jax",
+    reality=False,
+)
+
+# %% [markdown]
+# We display the magnitudes of the recovered coefficients up to degree three.
+# The non zero entries should occur at the same degree and order pairs used
+# to construct the signal.
+
+# %%
+m_values = np.arange(-maximum_degree, maximum_degree + 1)
+coefficient_magnitudes = np.abs(
+    recovered_flm[
+        : maximum_degree + 1,
+        L - 1 - maximum_degree : L + maximum_degree,
+    ]
+)
+
+fig, ax = plt.subplots(figsize=(7,4))
+ax.imshow(
+    coefficient_magnitudes,
+    origin="lower",
+    cmap="viridis",
+)
+ax.set_xlabel(r"Order $m$")
+ax.set_ylabel(r"Degree $\ell$")
+ax.set_xticks(np.arange(len(m_values)), labels=m_values)
+ax.set_yticks(np.arange(maximum_degree + 1))
+
+plt.show()
+# %% [markdown]
+# Finally, we compare the recovered coefficients with those used to construct
+# the signal. For the MW sampling scheme, the error should be close to
+# machine precision.
+
+# %%
+maximum_error = np.max(np.abs(recovered_flm - signal_flm))
+print(f"Maximum coefficient error: {maximum_error}")
