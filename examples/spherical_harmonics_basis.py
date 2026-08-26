@@ -357,10 +357,10 @@ ax.set_ylabel(r"$\ell$")
 ax.set_xticks(np.arange(len(m_values)), labels=m_values)
 ax.set_yticks(ell_values)
 
-# Add white borders
+# Add borders
 ax.set_xticks(np.arange(1, len(m_values)) - 0.5, minor=True)
 ax.set_yticks(np.arange(1, len(ell_values)) - 0.5, minor=True)
-ax.grid(which="minor", color="white", linewidth=2)
+ax.grid(which="minor", color="white", linewidth=3)
 ax.tick_params(which="minor", length=0)
 
 fig.colorbar(im, ax=ax, label=r"$|f_{\ell m}|$", shrink=0.8)
