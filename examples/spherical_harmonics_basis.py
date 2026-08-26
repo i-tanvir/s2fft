@@ -335,34 +335,30 @@ recovered_flm = s2fft.forward(
 # %%
 coefficient_magnitudes = np.abs(
     recovered_flm[: max_degree + 1, L - 1 - max_degree : L + max_degree]
-)   
+)
 
 # Leave invalid coefficients blank
-for ell in ell_values:
-    coefficient_magnitudes[ell, np.abs(m_values) > ell] = np.nan
+coefficient_magnitudes[abs(m_values[None]) > ell_values[:, None]] = np.nan
 
-fig, ax = plt.subplots(figsize=(7,4))
-im = ax.imshow(
-    coefficient_magnitudes,
-    cmap="viridis",
+fig, ax = plt.subplots(figsize=(7, 4))
+im = ax.pcolormesh(
+    m_values, ell_values,
+    coefficient_magnitudes, cmap="viridis",
+    edgecolors="white", linewidth=2,
 )
 
 # Label the non-zero coefficients
 non_zero = ~np.isclose(np.nan_to_num(coefficient_magnitudes), 0)
-for ell, column in np.argwhere(non_zero):
-    ax.text(column, ell, f"{coefficient_magnitudes[ell, column]:.2g}", ha="center", va="center")
+for ell, m_index in np.argwhere(non_zero):
+    ax.text(
+        m_values[m_index], ell,
+        f"{coefficient_magnitudes[ell, m_index]:.2g}",
+        ha="center", va="center",
+    )
 
-ax.set_xlabel(r"$m$")
-ax.set_ylabel(r"$\ell$")
-ax.set_xticks(np.arange(len(m_values)), labels=m_values)
-ax.set_yticks(ell_values)
-
-# Add borders
-ax.set_xticks(np.arange(1, len(m_values)) - 0.5, minor=True)
-ax.set_yticks(np.arange(1, len(ell_values)) - 0.5, minor=True)
-ax.grid(which="minor", color="white", linewidth=3)
-ax.tick_params(which="minor", length=0)
-
+# Format and label plot
+ax.invert_yaxis()
+ax.set(aspect=1, xlabel=r"$m$", ylabel=r"$\ell$", xticks=m_values, yticks=ell_values)
 fig.colorbar(im, ax=ax, label=r"$|f_{\ell m}|$", shrink=0.8)
 
 plt.show()
