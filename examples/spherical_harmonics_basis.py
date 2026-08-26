@@ -159,8 +159,11 @@ sampling = "mw"
 ell = 2
 m = 1
 
+# Use S2FFT's helper function to get the coefficient array shape described above.
+flm_shape = s2fft.sampling.s2_samples.flm_shape(L)
+
 # Set all coefficients to zero, then set f_{ell m} = 1.
-flm = np.zeros(s2fft.sampling.s2_samples.flm_shape(L), dtype=np.complex128)
+flm = np.zeros(flm_shape, dtype=np.complex128)
 flm[ell, m + L - 1] = 1.0
 
 # %% [markdown]
@@ -206,22 +209,25 @@ plt.show()
 # %% [markdown]
 # ## Visualising the basis
 #
-# We can repeat this one-hot coefficient construction for every valid degree
-# and order $(\ell,m)$ up to a chosen maximum degree.
+# We can repeat the same construction, setting one coefficient to one and all
+# remaining coefficients to zero, for every valid degree and order $(\ell,m)$
+# up to a chosen maximum degree.
 
 # %%
-maximum_degree = 3
+max_degree = 3
+ell_values = np.arange(max_degree + 1)
+m_values = np.arange(-max_degree, max_degree + 1)
 
 fig, axes = plt.subplots(
-    maximum_degree + 1,
-    2 * maximum_degree + 1,
+    len(ell_values),
+    len(m_values),
     figsize=(16, 8),
     subplot_kw={"projection": ccrs.Mollweide()},
 )
 
-for ell in range(maximum_degree + 1):
-    for m in range(-maximum_degree, maximum_degree + 1):
-        ax = axes[ell, m + maximum_degree]
+for ell in ell_values:
+    for m in m_values:
+        ax = axes[ell, m + max_degree]
 
         # Hide positions that do not correspond to a valid order.
         if abs(m) > ell:
@@ -229,7 +235,7 @@ for ell in range(maximum_degree + 1):
             continue
 
         flm = np.zeros(
-            s2fft.sampling.s2_samples.flm_shape(L),
+            flm_shape,
             dtype=np.complex128,
         )
         flm[ell, m + L - 1] = 1.0
@@ -253,7 +259,7 @@ plt.show()
 
 # %% [markdown]
 # Moving down the rows increases $\ell$, producing finer angular structure.
-# Moving across a row changes $m$ and therefore the variation with longitude.
+# Moving across a row changes $m$. Increasing $|m|$ produces more variation with longitude.
 # When $m=0$, the harmonic does not vary with longitude.
 
 # %% [markdown]
@@ -265,15 +271,15 @@ plt.show()
 # $$
 # f(\theta, \phi)
 # = Y_{0,0}(\theta,\phi)
-# + 0.75Y_{2,1}(\theta,\phi)
-# - 0.5Y_{3,-2}(\theta,\phi).
+# + 0.8Y_{2,1}(\theta,\phi)
+# - 0.4Y_{3,-2}(\theta,\phi).
 # $$
 # 
 # The inverse transform evaluates this weighted sum at the MW sampling nodes.
 
 # %%
 signal_flm = np.zeros(
-    s2fft.sampling.s2_samples.flm_shape(L),
+    flm_shape,
     dtype=np.complex128,
 )
 signal_flm[0, 0 + L - 1] = 1.0
@@ -327,29 +333,37 @@ recovered_flm = s2fft.forward(
 # to construct the signal.
 
 # %%
-m_values = np.arange(-maximum_degree, maximum_degree + 1)
 coefficient_magnitudes = np.abs(
-    recovered_flm[
-        : maximum_degree + 1,
-        L - 1 - maximum_degree : L + maximum_degree,
-    ]
-)
+    recovered_flm[: max_degree + 1, L - 1 - max_degree : L + max_degree]
+)   
+
+# Leave invalid coefficients blank
+for ell in ell_values:
+    coefficient_magnitudes[ell, np.abs(m_values) > ell] = np.nan
 
 fig, ax = plt.subplots(figsize=(7,4))
 im = ax.imshow(
     coefficient_magnitudes,
     cmap="viridis",
 )
+
+# Label the non-zero coefficients
+non_zero = ~np.isclose(np.nan_to_num(coefficient_magnitudes), 0)
+for ell, column in np.argwhere(non_zero):
+    ax.text(column, ell, f"{coefficient_magnitudes[ell, column]:.2g}", ha="center", va="center")
+
 ax.set_xlabel(r"$m$")
 ax.set_ylabel(r"$\ell$")
 ax.set_xticks(np.arange(len(m_values)), labels=m_values)
-ax.set_yticks(np.arange(maximum_degree + 1))
+ax.set_yticks(ell_values)
 
-cbar = fig.colorbar(im,
-                    ax=ax,
-                    label=r"$|f_{\ell m}|$",
-                    shrink=0.8,
-)
+# Add white borders
+ax.set_xticks(np.arange(1, len(m_values)) - 0.5, minor=True)
+ax.set_yticks(np.arange(1, len(ell_values)) - 0.5, minor=True)
+ax.grid(which="minor", color="white", linewidth=2)
+ax.tick_params(which="minor", length=0)
+
+fig.colorbar(im, ax=ax, label=r"$|f_{\ell m}|$", shrink=0.8)
 
 plt.show()
 
@@ -358,5 +372,5 @@ plt.show()
 # For the MW sampling scheme, the error should be close to machine precision.
 
 # %%
-maximum_error = np.max(np.abs(recovered_flm - signal_flm))
-print(f"Maximum coefficient error: {maximum_error:.2e}")
+max_error = np.max(np.abs(recovered_flm - signal_flm))
+print(f"Maximum coefficient error: {max_error:.2e}")
