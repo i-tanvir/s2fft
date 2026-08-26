@@ -350,11 +350,7 @@ im = ax.pcolormesh(
 # Label the non-zero coefficients
 non_zero = ~np.isclose(np.nan_to_num(coefficient_magnitudes), 0)
 for ell, m_index in np.argwhere(non_zero):
-    ax.text(
-        m_values[m_index], ell,
-        f"{coefficient_magnitudes[ell, m_index]:.2g}",
-        ha="center", va="center",
-    )
+    ax.text(m_values[m_index], ell, f"{coefficient_magnitudes[ell, m_index]:.2g}", ha="center", va="center")
 
 # Format and label plot
 ax.invert_yaxis()
