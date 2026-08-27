@@ -1,0 +1,44 @@
+"""
+Spatial derivatives of spherical signals
+========================================
+
+Spherical harmonic coefficients provide an accurate way to differentiate band-limited
+signals on the sphere. Instead of approximating a derivative from neighbouring samples,
+we differentiate the spherical harmonic expansion and then transform the result back
+to the sampling grid.
+
+This tutorial computes derivatives with respect to colatitude and longitude and compares
+them with the exact derivatives of a known test signal.
+"""
+
+# %% [markdown]
+# ## Coordinate derivatives on the sphere
+#
+# A scalar signal on the unit sphere is written as $f(\theta,\phi)$, where
+# $\theta \in [0,\pi]$ is colatitude and $\phi \in [0,2\pi)$ is longitude. Its surface
+# gradient is
+#
+# $$
+# \nabla_{\mathbb{S}^2} f
+# = \boldsymbol{e}_{\theta} \frac{\partial f}{\partial \theta}
+# + \boldsymbol{e}_{\phi} \frac{1}{\sin \theta}
+# \frac{\partial f}{\partial \phi}.
+# $$
+#
+# We first compute the two coordinate derivatives $\partial f / \partial\theta$ and
+# $\partial f / \partial \phi$. These are also building blocks for spectral methods
+# that solve partial differnetial equations on the sphere.
+
+# %%
+import jax
+
+jax.config.update("jax_enable_x64", True)
+
+import cartopy.crs as ccrs
+import numpy as np
+from matplotlib import pyplot as plt
+
+import s2fft
+
+L = 32
+sampling = "mw"
