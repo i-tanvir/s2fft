@@ -95,10 +95,28 @@ image = ax.pcolormesh(
     longitude_grid, latitude_grid,
     signal,
     transform=ccrs.PlateCarree(),
-    cmap="magma",
+    cmap="viridis",
 )
 ax.set_title(r"$f(\theta,\phi)$")
 
 fig.tight_layout
 
 plt.show()
+
+# %% [markdown]
+# ## Transforming to harmonic space
+#
+# The forward transform decomposes the sampled signal into spherical harmonic
+# coefficients $f_{\ell m}$.
+
+# %%
+flm = np.asarray(
+    s2fft.forward(
+        signal,
+        L=L,
+        sampling=sampling,
+        method="jax",
+        reality=False,
+    )
+)
+
