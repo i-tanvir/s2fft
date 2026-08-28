@@ -70,14 +70,14 @@ sampling = "mw"
 theta_values = s2fft.sampling.s2_samples.thetas(L, sampling)
 phi_values = s2fft.sampling.s2_samples.phis_equiang(L, sampling)
 theta_grid, phi_grid = np.meshgrid(theta_values, phi_values, indexing="ij")
+longitude_grid = np.rad2deg(phi_grid)
+latitude_grid = 90 - np.rad2deg(theta_grid)
 
 signal = (
     np.sin(theta_grid) * np.cos(phi_grid) + 0.5 * (3 * np.cos(theta_grid) ** 2 - 1)
 )
 
-exact_colatitude_derivative = (
-    np.cos(theta_grid) * np.cos(phi_grid) - 3 * np.sin(theta_grid) * np.cos(theta_grid)
-)
+exact_colatitude_derivative = (np.cos(theta_grid) * np.cos(phi_grid) - 3 * np.sin(theta_grid) * np.cos(theta_grid))
 exact_longitute_derivative = -np.sin(theta_grid) * np.sin(phi_grid)
 
 # %% [markdown]
@@ -91,12 +91,14 @@ fig, ax = plt.subplots(
     subplot_kw={"projection": ccrs.Mollweide()},
 )
 
-image = ax.imshow(
+image = ax.pcolormesh(
+    longitude_grid, latitude_grid,
     signal,
     transform=ccrs.PlateCarree(),
-    cmap="coolwarm",
+    cmap="magma",
 )
 ax.set_title(r"$f(\theta,\phi)$")
-fig.colorbar(image, ax=ax, shrink=0.7)
+
+fig.tight_layout
 
 plt.show()
