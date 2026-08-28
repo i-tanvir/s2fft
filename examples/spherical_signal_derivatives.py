@@ -54,8 +54,8 @@ sampling = "mw"
 # + \frac{1}{2}\left(3\cos^{2}\theta-1\right).
 # $$
 # 
-# Its two terms are combinations of spherical harmonics of degrees one and two, so
-# the signal is band-limited. Its exact coordinate derivatives are
+# Its two terms are combinations of spherical harmonics of degrees one and two, so the
+# signal is band-limited. Its exact coordinate derivatives are
 # 
 # $$
 # \frac{\partial f}{\partial\theta}
@@ -106,8 +106,8 @@ plt.show()
 # %% [markdown]
 # ## Transforming to harmonic space
 #
-# The forward transform decomposes the sampled signal into spherical harmonic
-# coefficients $f_{\ell m}$.
+# The forward transform decomposes the sampled signal into spherical harmonic coefficients
+# $f_{\ell m}$.
 
 # %%
 flm = np.asarray(
@@ -120,3 +120,35 @@ flm = np.asarray(
     )
 )
 
+# %% [markdown]
+# ## Differentiating with respect to longitude
+#
+# The longitude dependence of a spherical harmonic is $\exp(I m\phi)$.
+# Therefore,
+#
+# $$
+# \frac{\partial}{\partial\phi}Y_{\ell m}(\theta,\phi)
+# = i m Y_{\ell m}(\theta,\phi).
+# $$
+#
+# We can consequently differentiate the complete signal by multiplying every coefficeint
+# of order $m$ by $i m$. The inverse transform then evaluates the derivative at the original
+# sample locations.
+#
+# Although the coefficient operations are complex-valued, the derivatives of this real signal
+# are real. The `.real` attribute below discards imaginary components introduced only by
+# floating-point error.
+
+# %%
+m_values = np.arange(-L + 1, L)
+longitude_derivative_flm = 1j * m_values * flm
+
+longitude_derivative = np.asarray(
+    s2fft.inverse(
+        longitude_derivative_flm,
+        L=L,
+        sampling=sampling,
+        method="jax",
+        reality=False,
+    )
+).real
