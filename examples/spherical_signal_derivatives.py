@@ -67,3 +67,36 @@ sampling = "mw"
 
 
 # %%
+theta_values = s2fft.sampling.s2_samples.thetas(L, sampling)
+phi_values = s2fft.sampling.s2_samples.phis_equiang(L, sampling)
+theta_grid, phi_grid = np.meshgrid(theta_values, phi_values, indexing="ij")
+
+signal = (
+    np.sin(theta_grid) * np.cos(phi_grid) + 0.5 * (3 * np.cos(theta_grid) ** 2 - 1)
+)
+
+exact_colatitude_derivative = (
+    np.cos(theta_grid) * np.cos(phi_grid) - 3 * np.sin(theta_grid) * np.cos(theta_grid)
+)
+exact_longitute_derivative = -np.sin(theta_grid) * np.sin(phi_grid)
+
+# %% [markdown]
+# ## Visualising the signal
+#
+# This is the signal that will be differentiated.
+
+# %%
+fig, ax = plt.subplots(
+    figsize=(6,3),
+    subplot_kw={"projection": ccrs.Mollweide()},
+)
+
+image = ax.imshow(
+    signal,
+    transform=ccrs.PlateCarree(),
+    cmap="coolwarm",
+)
+ax.set_title(r"$f(\theta,\phi)$")
+fig.colorbar(image, ax=ax, shrink=0.7)
+
+plt.show()
