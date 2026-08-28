@@ -26,8 +26,8 @@ them with the exact derivatives of a known test signal.
 # $$
 #
 # We first compute the two coordinate derivatives $\partial f / \partial\theta$ and
-# $\partial f / \partial \phi$. These are also building blocks for spectral methods
-# that solve partial differnetial equations on the sphere.
+# $\partial f / \partial \phi$. These are also building blocks for [spectral methods](https://en.wikipedia.org/wiki/Spectral_method)
+# that solve partial differential equations on the sphere.
 
 # %%
 import jax
@@ -42,3 +42,28 @@ import s2fft
 
 L = 32
 sampling = "mw"
+
+# %% [markdown]
+# ## A band-limited signal
+#
+# We use the real-valued signal
+# 
+# $$
+# f(\theta,\phi)
+# = \sin\theta\cos\phi
+# + \frac{1}{2}\left(3\cos^{2}\theta-1\right).
+# $$
+# 
+# Its two terms are combinations of spherical harmonics of degrees one and two, so
+# the signal is band-limited. Its exact coordinate derivatives are
+# 
+# $$
+# \frac{\partial f}{\partial\theta}
+# = \cos\theta\cos\phi-3\sin\theta\cos\theta,
+# \qquad
+# \frac{\partial f}{\partial\phi}
+# = -\sin\theta\sin\phi.
+# $$
+
+
+# %%
