@@ -56,8 +56,7 @@ sampling = "mw"
 #
 # $$
 # f(\theta,\phi)
-# = \sin\theta\cos\phi
-# + \frac{1}{2}\left(3\cos^{2}\theta-1\right).
+# = \sin\theta\cos\phi + \frac{1}{2} \left(3\cos^{2}\theta-1 \right).
 # $$
 #
 # The first and second terms contain spherical harmonic modes of degrees one and two,
@@ -65,15 +64,14 @@ sampling = "mw"
 # is band-limited. Its exact coordinate derivatives are:
 #
 # $$
-# \frac{\partial f}{\partial\theta}
-# = \cos\theta\cos\phi-3\sin\theta\cos\theta,
+# \frac{\partial f}{\partial \theta}
+# = \cos\theta \cos\phi - 3 \sin\theta \cos\theta,
 # $$
 #
 # $$
-# \frac{\partial f}{\partial\phi}
-# = -\sin\theta\sin\phi.
+# \frac{\partial f}{\partial \phi}
+# = -\sin\theta \sin\phi.
 # $$
-#
 
 # %%
 theta_values = s2fft.sampling.s2_samples.thetas(L, sampling)
@@ -135,7 +133,7 @@ flm = np.asarray(
 #
 # $$
 # \frac{\partial}{\partial\phi}Y_{\ell m}(\theta,\phi)
-# = i m Y_{\ell m}(\theta,\phi).
+# = im Y_{\ell m}(\theta,\phi).
 # $$
 #
 # Hence, the longitude derivative of the signal can be computed directly in harmonic space by
@@ -154,4 +152,71 @@ longitude_derivative = np.asarray(
         method="jax",
         reality=True,
     )
+)
+
+# %% [markdown]
+# ## Differentiating with respect to colatitude
+#
+# Differentiation with respect to colatitude acts on the associated Legendre part of each
+# spherical harmonic. The derivative can be expressed in terms of neighbouring degrees:
+#
+# $$
+# \sin\theta \frac{\partial Y_{\ell m}}{\partial \theta}
+# = \ell \epsilon_{\ell+1,m} Y_{\ell+1,m} - (\ell+1) \epsilon_{\ell m} Y_{\ell-1,m},
+# $$
+#
+# where
+#
+# $$
+# \epsilon_{\ell m}
+# = \sqrt{\frac{\ell^{2} - m^{2}}{4\ell^{2} - 1}}.
+# $$
+#
+# Collecting the coefficients of each $Y_{\ell m}$ gives
+#
+# $$
+# \left(\sin\theta \frac{\partial f}{\partial \theta}\right)_{\ell m}
+# = (\ell-1) \epsilon_{\ell m} f_{\ell-1,m} - (\ell+2) \epsilon_{\ell+1,m} f_{\ell+1,m}.
+# $$
+#
+# We first reconstruct the scaled derivative and then divide by $\sin\theta$. The final MW
+# ring lies at the south pole, where $\sin\theta=0$ and the colatitude direction depends on
+# longitude. We therefore leave the derivative undefined there.
+
+# %%
+ell_values = np.arange(L)[:, None]
+
+# Invalid pairs with |m| > ell, and ell = 0, have epsilon = 0.
+epsilon = np.sqrt(
+    np.maximum(ell_values**2 - m_values**2, 0) / np.maximum(4 * ell_values**2 - 1, 1)
+)
+
+# For each degree ell, collect contributions from neighbouring degrees.
+scaled_colatitude_derivative_flm = np.zeros_like(flm)
+scaled_colatitude_derivative_flm[1:] += (
+    (ell_values[1:] - 1) * epsilon[1:] * flm[:-1]
+)
+scaled_colatitude_derivative_flm[:-1] -= (
+    (ell_values[:-1] + 2) * epsilon[1:] * flm[1:]
+)
+
+scaled_colatitude_derivative = np.asarray(
+    s2fft.inverse(
+        scaled_colatitude_derivative_flm,
+        L=L,
+        sampling=sampling,
+        method="jax",
+        reality=True,
+    )
+)
+
+sin_theta = np.sin(theta_values)
+non_polar_rings = ~np.isclose(sin_theta, 0)
+
+colatitude_derivative = np.full_like(scaled_colatitude_derivative, np.nan)
+np.divide(
+    scaled_colatitude_derivative,
+    sin_theta[:, None],
+    out=colatitude_derivative,
+    where=non_polar_rings[:, None],
 )
