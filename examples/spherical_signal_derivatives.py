@@ -59,9 +59,8 @@ sampling = "mw"
 # = \sin\theta\cos\phi + \frac{1}{2} \left(3\cos^{2}\theta-1 \right).
 # $$
 #
-# The first and second terms contain spherical harmonic modes of degrees one and two,
-# respectively. The signal therefore contains no harmonic content above degree two and
-# is band-limited. Its exact coordinate derivatives are:
+# These terms contain spherical harmonic modes of degrees one and two, so the signal has no harmonic
+# content above degree two and is band-limited. Its exact coordinate derivatives are:
 #
 # $$
 # \frac{\partial f}{\partial \theta}
@@ -102,8 +101,8 @@ ax.pcolormesh(
 )
 
 ax.set_title(r"$f(\theta,\phi)$")
-fig.tight_layout()
 
+fig.tight_layout()
 plt.show()
 
 # %% [markdown]
@@ -180,7 +179,7 @@ longitude_derivative = np.asarray(
 # $$
 #
 # Thus, the coefficient at degree $\ell$ receives contributions from the original coefficients
-# at degrees $\ell-1$ and $\ell+1$.
+# at degrees $\ell-1$ and $\ell+1$. A more detailed derivation is given in the [SpeedyWeather documentation on meridional derivatives](https://speedyweather.github.io/SpeedyWeatherDocumentation/dev/spectral_transform#Meridional-derivative).
 #
 # We reconstruct the scaled derivative and divide by $\sin\theta$ to recover
 # $\frac{\partial f}{\partial\theta}$. The final MW ring lies at the south pole, where this coordinate
@@ -251,12 +250,11 @@ for ax, magnitudes, title in zip(axes, coefficient_magnitudes, titles):
     )
     ax.set(title=title, xlabel=r"$m$", xticks=display_m_values, yticks=display_ell_values, aspect=1)
 
-# Format and label
 axes[0].invert_yaxis()
 axes[0].set_ylabel(r"$\ell$")
-fig.tight_layout()
 fig.colorbar(image, ax=axes, label="Magnitude", orientation="horizontal", shrink=0.7)
 
+fig.tight_layout()
 plt.show()
 
 # %% [markdown]
@@ -281,13 +279,14 @@ for ax, field, title in zip(axes, fields, titles):
     )
     ax.set_title(title)
 
+fig.tight_layout()
 plt.show()
 
 # %% [markdown]
 # ## Checking the accuracy
 #
 # Finally, we compare the spectral derivatives with the exact derivatives of the test signal.
-# Since the test signal is band-limited and the sampling theorem applies, both errors should be
+# Since the test signal is band-limited and the MW sampling theorem applies, both errors should be
 # very small. The colatitude error excludes the south-pole ring and is slightly larger because
 # division by $\sin\theta$ amplifies numerical error near the poles.
 
@@ -297,4 +296,3 @@ longitude_error = np.max(np.abs(longitude_derivative - exact_longitude_derivativ
 
 print(f"Maximum colatitude derivative error: {colatitude_error:.2e}")
 print(f"Maximum longitude derivative error: {longitude_error:.2e}")
-# %%
