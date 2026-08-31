@@ -10,6 +10,20 @@ the sphere.
 This tutorial introduces their main mathematical properties, visualises
 some basis functions, and shows how ``S2FFT`` decomposes a signal into
 spherical harmonic coefficients.
+
+.. image:: https://colab.research.google.com/assets/colab-badge.svg
+    :align: center
+    :alt: Open in Google Colab
+    :target: https://colab.research.google.com/github/astro-informatics/s2fft/tree/gh-pages/_colab_notebooks/spherical_harmonics_basis.ipynb
+
+If you are working on this notebook in Google Colab, you will need to have Google Colab install ``s2fft``.
+You can do this by adding a cell to the top of the notebook with the following content:
+
+.. code-block:: bash
+
+    !pip install s2fft &> /dev/null
+
+and then running that cell.
 """
 
 # %% [markdown]
@@ -193,8 +207,7 @@ y_ell_m = s2fft.inverse(
 
 # %%
 fig, ax = plt.subplots(
-    figsize=(3, 1.5),
-    subplot_kw={"projection": ccrs.Mollweide()},
+    figsize=(3, 1.5), subplot_kw={"projection": ccrs.Mollweide()},
 )
 
 ax.imshow(
@@ -204,6 +217,7 @@ ax.imshow(
 )
 ax.set_title(rf"$\ell={ell},\ m={m}$")
 
+fig.tight_layout()
 plt.show()
 
 # %% [markdown]
@@ -219,10 +233,7 @@ ell_values = np.arange(max_degree + 1)
 m_values = np.arange(-max_degree, max_degree + 1)
 
 fig, axes = plt.subplots(
-    len(ell_values),
-    len(m_values),
-    figsize=(16, 8),
-    subplot_kw={"projection": ccrs.Mollweide()},
+    len(ell_values), len(m_values), figsize=(16, 8), subplot_kw={"projection": ccrs.Mollweide()},
 )
 
 for ell in ell_values:
@@ -234,10 +245,7 @@ for ell in ell_values:
             ax.set_axis_off()
             continue
 
-        flm = np.zeros(
-            flm_shape,
-            dtype=np.complex128,
-        )
+        flm = np.zeros(flm_shape, dtype=np.complex128)
         flm[ell, m + L - 1] = 1.0
 
         y_ell_m = s2fft.inverse(
@@ -255,6 +263,7 @@ for ell in ell_values:
         )
         ax.set_title(rf"$\ell={ell},\ m={m}$", fontsize=9)
 
+fig.tight_layout()
 plt.show()
 
 # %% [markdown]
@@ -278,10 +287,7 @@ plt.show()
 # The inverse transform evaluates this weighted sum at the MW sampling nodes.
 
 # %%
-signal_flm = np.zeros(
-    flm_shape,
-    dtype=np.complex128,
-)
+signal_flm = np.zeros(flm_shape, dtype=np.complex128)
 signal_flm[0, 0 + L - 1] = 1.0
 signal_flm[2, 1 + L - 1] = 0.8
 signal_flm[3, -2 + L - 1] = -0.4
@@ -299,8 +305,7 @@ signal = s2fft.inverse(
 
 # %%
 fig, ax = plt.subplots(
-    figsize=(3,1.5),
-    subplot_kw={"projection": ccrs.Mollweide()},
+    figsize=(3,1.5), subplot_kw={"projection": ccrs.Mollweide()},
 )
 
 ax.imshow(
@@ -310,6 +315,7 @@ ax.imshow(
 )
 ax.set_title(r"$f(\theta,\phi)$")
 
+fig.tight_layout()
 plt.show()
 
 # %% [markdown]
@@ -342,8 +348,8 @@ coefficient_magnitudes[abs(m_values[None]) > ell_values[:, None]] = np.nan
 
 fig, ax = plt.subplots(figsize=(7, 4))
 im = ax.pcolormesh(
-    m_values, ell_values,
-    coefficient_magnitudes, cmap="viridis",
+    m_values, ell_values, coefficient_magnitudes,
+    cmap="viridis",
     edgecolors="white", linewidth=2,
 )
 
@@ -352,11 +358,11 @@ non_zero = ~np.isclose(np.nan_to_num(coefficient_magnitudes), 0)
 for ell, m_index in np.argwhere(non_zero):
     ax.text(m_values[m_index], ell, f"{coefficient_magnitudes[ell, m_index]:.2g}", ha="center", va="center")
 
-# Format and label plot
 ax.invert_yaxis()
 ax.set(aspect=1, xlabel=r"$m$", ylabel=r"$\ell$", xticks=m_values, yticks=ell_values)
 fig.colorbar(im, ax=ax, label=r"$|f_{\ell m}|$", shrink=0.8)
 
+fig.tight_layout()
 plt.show()
 
 # %% [markdown]
