@@ -195,12 +195,12 @@ longitude_derivative = np.asarray(
 # %%
 ell_values = np.arange(L)[:, None]
 
-# Invalid pairs with |m| > ell, and ell = 0, have epsilon = 0.
+# Invalid pairs with |m| > ell, and ell = 0, have epsilon = 0
 epsilon = np.sqrt(
     np.maximum(ell_values**2 - m_values**2, 0) / np.maximum(4 * ell_values**2 - 1, 1)
 )
 
-# For each degree ell, collect contributions from neighbouring degrees, ell-1 and ell+1.
+# For each degree ell, collect contributions from neighbouring degrees, ell-1 and ell+1
 scaled_colatitude_derivative_flm = np.zeros_like(flm)
 scaled_colatitude_derivative_flm[1:] += (ell_values[1:] - 1) * epsilon[1:] * flm[:-1]
 scaled_colatitude_derivative_flm[:-1] -= (ell_values[:-1] + 2) * epsilon[1:] * flm[1:]
@@ -247,13 +247,12 @@ coefficient_magnitudes = (
     np.abs(scaled_colatitude_derivative_flm[: max_degree + 1, L - 1 - max_degree : L + max_degree]),
 )
 
-# Leave entries that do not correspond to valid coefficients blank.
+# Leave entries that do not correspond to valid coefficients blank
 invalid_coefficients = np.abs(display_m_values[None, :]) > display_ell_values[:, None]
-
 for magnitudes in coefficient_magnitudes:
     magnitudes[invalid_coefficients] = np.nan
 
-titles = r"$|f_{\ell m}|$", r"$|\frac{\partial f}{\partial\phi}_{\ell m}|$", r"$|g_{\ell m}|$"
+titles = r"$|f_{\ell m}|$", r"$|\left(\partial f/\partial\phi\right)_{\ell m}|$", r"$|g_{\ell m}|$"
 
 fig, axes = plt.subplots(1, 3, figsize=(16, 8), sharex=True, sharey=True)
 
@@ -266,10 +265,37 @@ for ax, magnitudes, title in zip(axes, coefficient_magnitudes, titles):
     )
     ax.set(title=title, xlabel=r"$m$", xticks=display_m_values, yticks=display_ell_values, aspect=1)
 
+# Format and label
 axes[0].invert_yaxis()
 axes[0].set_ylabel(r"$\ell$")
 fig.tight_layout()
-fig.colorbar(image, ax=axes, label="Magnitude", shrink=0.5)
+fig.colorbar(image, ax=axes, label="Magnitude", orientation="horizontal", shrink=0.7)
+
+plt.show()
+
+# %% [markdown]
+# ## Visualising the derivatives
+#
+# The two spectral derivatives are shown below. The undefined south-pole row of the colatitude
+# derivative is left blank.
+
+# %%
+fields = (colatitude_derivative, longitude_derivative)
+titles = r"$\partial f / \partial\theta$", r"$\partial f / \partial\phi$"
+
+fig, axes = plt.subplots(
+    1, 2,
+    figsize=(8, 3),
+    subplot_kw={"projection": ccrs.Mollweide()},
+)
+
+for ax, field, title in zip(axes, fields, titles):
+    image = ax.imshow(
+        field,
+        transform=ccrs.PlateCarree(),
+        cmap="viridis",
+    )
+    ax.set_title(title)
 
 plt.show()
 # %%
