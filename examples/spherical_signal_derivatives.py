@@ -80,9 +80,9 @@ theta_grid, phi_grid = np.meshgrid(theta_values, phi_values, indexing="ij")
 longitude_grid = np.rad2deg(phi_grid)
 latitude_grid = 90 - np.rad2deg(theta_grid)
 
-signal = np.sin(theta_grid) * np.cos(phi_grid) + 0.5 * (3 * np.cos(theta_grid) ** 2 - 1)
+signal = np.sin(theta_grid) * np.cos(phi_grid) + 0.5 * (3 * np.cos(theta_grid)**2 - 1)
 
-exact_colatitude_derivative = (np.cos(theta_grid) * np.cos(phi_grid) - 3 * np.sin(theta_grid) * np.cos(theta_grid))
+exact_colatitude_derivative = np.cos(theta_grid) * np.cos(phi_grid) - 3 * np.sin(theta_grid) * np.cos(theta_grid)
 exact_longitude_derivative = -np.sin(theta_grid) * np.sin(phi_grid)
 
 # %% [markdown]
@@ -157,31 +157,40 @@ longitude_derivative = np.asarray(
 # %% [markdown]
 # ## Differentiating with respect to colatitude
 #
-# Differentiation with respect to colatitude acts on the associated Legendre part of each
-# spherical harmonic. The derivative can be expressed in terms of neighbouring degrees:
+# Unlike differentiation with respect to longitude, differentiation with respect to
+# colatitude couples spherical harmonics with neighbouring degrees.
+#
+# It is convenient to first consider the scaled derivative $\sin\theta\,\partial Y_{\ell m}/\partial\theta$,
+# which satisfies
 #
 # $$
-# \sin\theta \frac{\partial Y_{\ell m}}{\partial \theta}
-# = \ell \epsilon_{\ell+1,m} Y_{\ell+1,m} - (\ell+1) \epsilon_{\ell m} Y_{\ell-1,m},
+# \sin\theta \frac{\partial Y_{\ell m}}{\partial\theta}
+# = \ell\epsilon_{\ell+1,m} Y_{\ell+1,m} - (\ell+1)\epsilon_{\ell m} Y_{\ell-1,m},
 # $$
 #
-# where
+# where the coupling factor is
 #
 # $$
 # \epsilon_{\ell m}
-# = \sqrt{\frac{\ell^{2} - m^{2}}{4\ell^{2} - 1}}.
+# = \sqrt{\frac{\ell^{2}-m^{2}}{4\ell^{2}-1}}.
 # $$
 #
-# Collecting the coefficients of each $Y_{\ell m}$ gives
+# Applying this relation to the harmonic expansion and collecting the coefficient of each
+# $Y_{\ell m}$ gives
 #
 # $$
-# \left(\sin\theta \frac{\partial f}{\partial \theta}\right)_{\ell m}
-# = (\ell-1) \epsilon_{\ell m} f_{\ell-1,m} - (\ell+2) \epsilon_{\ell+1,m} f_{\ell+1,m}.
+# \left(\sin\theta\frac{\partial f}{\partial\theta}\right)_{\ell m}
+# = (\ell-1)\epsilon_{\ell m}f_{\ell-1,m} - (\ell+2)\epsilon_{\ell+1,m}f_{\ell+1,m}.
 # $$
 #
-# We first reconstruct the scaled derivative and then divide by $\sin\theta$. The final MW
-# ring lies at the south pole, where $\sin\theta=0$ and the colatitude direction depends on
-# longitude. We therefore leave the derivative undefined there.
+# Thus, the coefficient at degree $\ell$ receives contributions from the original
+# coefficients at degrees $\ell-1$ and $\ell+1$.
+#
+# We reconstruct the scaled derivative and divide by $\sin\theta$ to recover
+# $\partial f / \partial\theta$. The final MW ring lies at the south pole, where
+# $\sin\theta=0$. Since the colatitude direction at a pole depends on longitude, the
+# coordinate derivative is not uniquely defined there in general. We therefore leave
+# the final ring undefined.
 
 # %%
 ell_values = np.arange(L)[:, None]
@@ -191,14 +200,10 @@ epsilon = np.sqrt(
     np.maximum(ell_values**2 - m_values**2, 0) / np.maximum(4 * ell_values**2 - 1, 1)
 )
 
-# For each degree ell, collect contributions from neighbouring degrees.
+# For each degree ell, collect contributions from neighbouring degrees, ell-1 and ell+1.
 scaled_colatitude_derivative_flm = np.zeros_like(flm)
-scaled_colatitude_derivative_flm[1:] += (
-    (ell_values[1:] - 1) * epsilon[1:] * flm[:-1]
-)
-scaled_colatitude_derivative_flm[:-1] -= (
-    (ell_values[:-1] + 2) * epsilon[1:] * flm[1:]
-)
+scaled_colatitude_derivative_flm[1:] += (ell_values[1:] - 1) * epsilon[1:] * flm[:-1]
+scaled_colatitude_derivative_flm[:-1] -= (ell_values[:-1] + 2) * epsilon[1:] * flm[1:]
 
 scaled_colatitude_derivative = np.asarray(
     s2fft.inverse(
@@ -220,3 +225,51 @@ np.divide(
     out=colatitude_derivative,
     where=non_polar_rings[:, None],
 )
+
+# %% [markdown]
+# ## Visualising the coefficient operations
+#
+# The heatmaps below compare the coefficients of the signal, the longitude derivative,
+# and the scaled colatitude derivative $g=\sin\theta\,\partial f/\partial\theta$.
+#
+# Longitude differentiation leaves every coefficient at the same $(\ell,m)$ and multiplies 
+# it by $i m$. In contrast, colatitude differentiation leaves $m$ unchanged but moves information
+# between neighbouring degrees $\ell-1$ and $\ell+1$.
+
+# %%
+max_degree = 3
+display_ell_values = np.arange(max_degree + 1)
+display_m_values = np.arange(-max_degree, max_degree + 1)
+
+coefficient_magnitudes = (
+    np.abs(flm[: max_degree + 1, L - 1 - max_degree : L + max_degree]),
+    np.abs(longitude_derivative_flm[: max_degree + 1, L - 1 - max_degree : L + max_degree]),
+    np.abs(scaled_colatitude_derivative_flm[: max_degree + 1, L - 1 - max_degree : L + max_degree]),
+)
+
+# Leave entries that do not correspond to valid coefficients blank.
+invalid_coefficients = np.abs(display_m_values[None, :]) > display_ell_values[:, None]
+
+for magnitudes in coefficient_magnitudes:
+    magnitudes[invalid_coefficients] = np.nan
+
+titles = r"$|f_{\ell m}|$", r"$|\frac{\partial f}{\partial\phi}_{\ell m}|$", r"$|g_{\ell m}|$"
+
+fig, axes = plt.subplots(1, 3, figsize=(16, 8), sharex=True, sharey=True)
+
+for ax, magnitudes, title in zip(axes, coefficient_magnitudes, titles):
+    image = ax.pcolormesh(
+        display_m_values, display_ell_values,
+        magnitudes,
+        cmap="viridis",
+        edgecolors="white", linewidth=2,
+    )
+    ax.set(title=title, xlabel=r"$m$", xticks=display_m_values, yticks=display_ell_values, aspect=1)
+
+axes[0].invert_yaxis()
+axes[0].set_ylabel(r"$\ell$")
+fig.tight_layout()
+fig.colorbar(image, ax=axes, label="Magnitude", shrink=0.5)
+
+plt.show()
+# %%
