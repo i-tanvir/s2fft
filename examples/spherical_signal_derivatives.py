@@ -96,8 +96,7 @@ fig, ax = plt.subplots(
 )
 
 ax.pcolormesh(
-    longitude_grid, latitude_grid,
-    signal,
+    longitude_grid, latitude_grid, signal,
     transform=ccrs.PlateCarree(),
     cmap="viridis",
 )
@@ -246,8 +245,7 @@ fig, axes = plt.subplots(1, 3, figsize=(16, 8), sharex=True, sharey=True)
 
 for ax, magnitudes, title in zip(axes, coefficient_magnitudes, titles):
     image = ax.pcolormesh(
-        display_m_values, display_ell_values,
-        magnitudes,
+        display_m_values, display_ell_values, magnitudes,
         cmap="viridis",
         edgecolors="white", linewidth=2,
     )
@@ -268,7 +266,7 @@ plt.show()
 # derivative is left blank.
 
 # %%
-fields = (colatitude_derivative, longitude_derivative)
+fields = colatitude_derivative, longitude_derivative
 titles = r"$\partial f / \partial\theta$", r"$\partial f / \partial\phi$"
 
 fig, axes = plt.subplots(
@@ -277,11 +275,26 @@ fig, axes = plt.subplots(
 
 for ax, field, title in zip(axes, fields, titles):
     ax.pcolormesh(
-        longitude_grid, latitude_grid,
-        field,
+        longitude_grid, latitude_grid, field,
         transform=ccrs.PlateCarree(),
         cmap="viridis",
     )
     ax.set_title(title)
 
 plt.show()
+
+# %% [markdown]
+# ## Checking the accuracy
+#
+# Finally, we compare the spectral derivatives with the exact derivatives of the test signal.
+# Since the test signal is band-limited and the sampling theorem applies, both errors should be
+# very small. The colatitude error excludes the south-pole ring and is slightly larger because
+# division by $\sin\theta$ amplifies numerical error near the poles.
+
+# %%
+colatitude_error = np.max(np.abs(colatitude_derivative[:-1] - exact_colatitude_derivative[:-1]))
+longitude_error = np.max(np.abs(longitude_derivative - exact_longitude_derivative))
+
+print(f"Maximum colatitude derivative error: {colatitude_error:.2e}")
+print(f"Maximum longitude derivative error: {longitude_error:.2e}")
+# %%
