@@ -9,6 +9,20 @@ to the sampling grid.
 
 This tutorial computes derivatives with respect to colatitude and longitude and compares
 them with the exact derivatives of a known test signal.
+
+.. image:: https://colab.research.google.com/assets/colab-badge.svg
+    :align: center
+    :alt: Open in Google Colab
+    :target: https://colab.research.google.com/github/astro-informatics/s2fft/tree/gh-pages/_colab_notebooks/spherical_signal_derivatives.ipynb
+
+If you are working on this notebook in Google Colab, you will need to have Google Colab install ``s2fft``.
+You can do this by adding a cell to the top of the notebook with the following content:
+
+.. code-block:: bash
+
+    !pip install s2fft &> /dev/null
+
+and then running that cell.
 """
 
 # %% [markdown]
