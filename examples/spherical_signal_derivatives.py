@@ -92,8 +92,7 @@ exact_longitude_derivative = -np.sin(theta_grid) * np.sin(phi_grid)
 
 # %%
 fig, ax = plt.subplots(
-    figsize=(6, 3),
-    subplot_kw={"projection": ccrs.Mollweide()},
+    figsize=(6, 3), subplot_kw={"projection": ccrs.Mollweide()},
 )
 
 ax.pcolormesh(
@@ -137,8 +136,7 @@ flm = np.asarray(
 # $$
 #
 # Hence, the longitude derivative of the signal can be computed directly in harmonic space by
-# multiplying each coefficient of order $m$ by $i m$. The inverse transform then evaluates the
-# derivative at the sampling nodes.
+# multiplying each coefficient of order $m$ by $i m$.
 
 # %%
 m_values = np.arange(-L + 1, L)
@@ -157,10 +155,9 @@ longitude_derivative = np.asarray(
 # %% [markdown]
 # ## Differentiating with respect to colatitude
 #
-# Unlike differentiation with respect to longitude, differentiation with respect to
-# colatitude couples spherical harmonics with neighbouring degrees.
+# Differentiation with respect to colatitude couples spherical harmonics with neighbouring degrees.
 #
-# It is convenient to first consider the scaled derivative $\sin\theta\,\partial Y_{\ell m}/\partial\theta$,
+# It is convenient to first consider the scaled derivative $\sin\theta\ \frac{\partial Y_{\ell m}}{\partial\theta}$,
 # which satisfies
 #
 # $$
@@ -183,14 +180,12 @@ longitude_derivative = np.asarray(
 # = (\ell-1)\epsilon_{\ell m}f_{\ell-1,m} - (\ell+2)\epsilon_{\ell+1,m}f_{\ell+1,m}.
 # $$
 #
-# Thus, the coefficient at degree $\ell$ receives contributions from the original
-# coefficients at degrees $\ell-1$ and $\ell+1$.
+# Thus, the coefficient at degree $\ell$ receives contributions from the original coefficients
+# at degrees $\ell-1$ and $\ell+1$.
 #
 # We reconstruct the scaled derivative and divide by $\sin\theta$ to recover
-# $\partial f / \partial\theta$. The final MW ring lies at the south pole, where
-# $\sin\theta=0$. Since the colatitude direction at a pole depends on longitude, the
-# coordinate derivative is not uniquely defined there in general. We therefore leave
-# the final ring undefined.
+# $\frac{\partial f}{\partial\theta}$. The final MW ring lies at the south pole, where this coordinate
+# derivative is undefined in general, so it is left blank.
 
 # %%
 ell_values = np.arange(L)[:, None]
@@ -215,16 +210,9 @@ scaled_colatitude_derivative = np.asarray(
     )
 )
 
-sin_theta = np.sin(theta_values)
-non_polar_rings = ~np.isclose(sin_theta, 0)
-
-colatitude_derivative = np.full_like(scaled_colatitude_derivative, np.nan)
-np.divide(
-    scaled_colatitude_derivative,
-    sin_theta[:, None],
-    out=colatitude_derivative,
-    where=non_polar_rings[:, None],
-)
+colatitude_derivative = scaled_colatitude_derivative.copy()
+colatitude_derivative[:-1] /= np.sin(theta_values[:-1, None])
+colatitude_derivative[-1] = np.nan
 
 # %% [markdown]
 # ## Visualising the coefficient operations
@@ -284,13 +272,12 @@ fields = (colatitude_derivative, longitude_derivative)
 titles = r"$\partial f / \partial\theta$", r"$\partial f / \partial\phi$"
 
 fig, axes = plt.subplots(
-    1, 2,
-    figsize=(8, 3),
-    subplot_kw={"projection": ccrs.Mollweide()},
+    1, 2, figsize=(8, 4), subplot_kw={"projection": ccrs.Mollweide()},
 )
 
 for ax, field, title in zip(axes, fields, titles):
-    image = ax.imshow(
+    ax.pcolormesh(
+        longitude_grid, latitude_grid,
         field,
         transform=ccrs.PlateCarree(),
         cmap="viridis",
@@ -298,4 +285,3 @@ for ax, field, title in zip(axes, fields, titles):
     ax.set_title(title)
 
 plt.show()
-# %%
