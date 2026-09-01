@@ -230,7 +230,7 @@ colatitude_derivative[-1] = np.nan
 # ## Visualising the coefficient operations
 #
 # The heatmaps below compare the coefficients of the signal, the longitude derivative,
-# and the scaled colatitude derivative $g=\sin\theta\,\partial f/\partial\theta$.
+# and the scaled colatitude derivative.
 #
 # Longitude differentiation leaves every coefficient at the same $(\ell,m)$ and multiplies 
 # it by $i m$. In contrast, colatitude differentiation leaves $m$ unchanged but moves information
@@ -252,23 +252,37 @@ invalid_coefficients = np.abs(display_m_values[None, :]) > display_ell_values[:,
 for magnitudes in coefficient_magnitudes:
     magnitudes[invalid_coefficients] = np.nan
 
-titles = r"$|f_{\ell m}|$", r"$|\left(\partial f/\partial\phi\right)_{\ell m}|$", r"$|g_{\ell m}|$"
+titles = (
+    r"$|f_{\ell m}|$",
+    r"$\left|\left(\frac{\partial f}{\partial\phi}\right)_{\ell m}\right|$",
+    r"$\left|\left(\sin\theta\,\frac{\partial f}{\partial\theta}\right)_{\ell m}\right|$",
+)
 
 fig, axes = plt.subplots(1, 3, figsize=(16, 8), sharex=True, sharey=True)
+
+max_magnitude = max(np.nanmax(magnitudes) for magnitudes in coefficient_magnitudes)
 
 for ax, magnitudes, title in zip(axes, coefficient_magnitudes, titles):
     image = ax.pcolormesh(
         display_m_values, display_ell_values, magnitudes,
-        cmap="viridis",
+        cmap="viridis", vmin=0, vmax=max_magnitude,
         edgecolors="white", linewidth=2,
     )
     ax.set(title=title, xlabel=r"$m$", xticks=display_m_values, yticks=display_ell_values, aspect=1)
+
+    non_zero = ~np.isclose(np.nan_to_num(magnitudes), 0)
+    for ell_index, m_index in np.argwhere(non_zero):
+        ax.text(
+            display_m_values[m_index], display_ell_values[ell_index],
+            f"{magnitudes[ell_index, m_index]:.2g}",
+            ha="center", va="center",
+        )
 
 axes[0].invert_yaxis()
 axes[0].set_ylabel(r"$\ell$")
 fig.colorbar(image, ax=axes, label="Magnitude", orientation="horizontal", shrink=0.7)
 
-fig.tight_layout()
+fig.tight_layout(rect=[0, 0.3, 1, 1])
 plt.show()
 
 # %% [markdown]
