@@ -24,3 +24,23 @@ following content:
 
 and then running that cell.
 """
+
+# %% [markdown]
+# ## Poisson's equation on the sphere
+#
+# On the unit sphere, Poisson's equation for an unknown scalar field $u(\theta,\phi)$ is
+#
+# $$
+# \nabla_{\mathbb{S}^2}^{2} u = f,
+# $$
+#
+# where $f(\theta,\phi)$ is a known source and $\nabla_{\mathbb{S}^2}^{2}$ is the
+# [Laplace-Beltrami operator](https://en.wikipedia.org/wiki/Laplace%E2%80%93Beltrami_operator).
+# In spherical coordinates,
+#
+# $$
+# \nabla_{\mathbb{S}^2}^{2} u
+# = \frac{1}{\sin\theta} \frac{\partial}{\partial\theta} \left(\sin\theta \frac{\partial u}{\partial\theta}\right)
+# + \frac{1}{\sin^{2}\theta} \frac{\partial^{2}u}{\partial\phi^{2}}.
+# $$
+
