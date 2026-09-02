@@ -44,6 +44,8 @@ and then running that cell.
 # = \frac{1}{\sin\theta} \frac{\partial}{\partial\theta} \left(\sin\theta \frac{\partial u}{\partial\theta}\right)
 # + \frac{1}{\sin^{2}\theta} \frac{\partial^{2}u}{\partial\phi^{2}}.
 # $$
+#
+# Poisson equations on the sphere arise in many settings, including geophysics, astrophysics, and fluid dynamics.
 
 # %% [markdown]
 # ## Solving in harmonic space
@@ -84,3 +86,28 @@ import s2fft
 
 L = 32
 sampling = "mw"
+
+# %% [markdown]
+# ## Constructing a test problem
+#
+# To test the numerical solution, we begin with a known exact solution,
+#
+# $$
+# u(\theta,\phi) = \sin\theta \cos\phi + \frac{1}{2} \left(3\cos^{2}\theta-1\right).
+# $$
+#
+# The two terms are spherical harmonic modes of degrees $\ell = 1$ and $\ell = 2$, respectively. Since
+# the spherical Laplacian acts on a mode of degree $\ell$ as
+#
+# $$
+# \Delta_{\mathbb{S}^2} Y_{\ell m} = -\ell (\ell+1) Y_{\ell m},
+# $$
+#
+# it multiplies these terms by $-2$ and $-6$. The corresponding source is therefore
+#
+# $$
+# f(\theta,\phi) = -2 \sin\theta \cos\phi - 3\left(3\cos^{2}\theta-1\right).
+# $$
+#
+# Both $u$ and $f$ have zero mean and contain only degrees up to $\ell = 2$. They can therefore be
+# represented exactly at any band-limit $L \geq 3$, up to machine precision.
