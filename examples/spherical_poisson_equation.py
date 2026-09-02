@@ -176,6 +176,63 @@ solution_flm = np.zeros_like(source_flm)
 solution_flm[1:] = -source_flm[1:] / laplacian_eigenvalues[1:]
 
 # %% [markdown]
+# ## Visualising the coefficient operation
+#
+# The heatmaps below compare the coefficients of the source and solution.
+#
+# Solving Poisson's equation leaves each coefficient at the same $(\ell,m)$ and divides it
+# by the corresponding Laplacian eigenvalue $-\ell(\ell+1)$. The solution therefore contains
+# the same harmonic modes as the source, but with different magnitudes.
+
+# %%
+max_degree = 2
+display_ell_values = np.arange(max_degree + 1)
+display_m_values = np.arange(-max_degree, max_degree + 1)
+
+coefficient_magnitudes = (
+    np.abs(source_flm[: max_degree + 1, L - 1 - max_degree : L + max_degree]),
+    np.abs(solution_flm[: max_degree + 1, L - 1 - max_degree : L + max_degree]),
+)
+
+# Leave entries that do not correspond to valid coefficients blank
+invalid_coefficients = np.abs(display_m_values[None, :]) > display_ell_values[:, None]
+
+for magnitudes in coefficient_magnitudes:
+    magnitudes[invalid_coefficients] = np.nan
+
+titles = (r"$|f_{\ell m}|$", r"$|u_{\ell m}|$")
+
+fig, axes = plt.subplots(1, 2, figsize=(10, 6), sharex=True, sharey=True)
+
+max_magnitude = max(np.nanmax(magnitudes) for magnitudes in coefficient_magnitudes)
+
+for ax, magnitudes, title in zip(axes, coefficient_magnitudes, titles):
+    image = ax.pcolormesh(
+        display_m_values, display_ell_values, magnitudes,
+        cmap="viridis", vmin=0, vmax=max_magnitude,
+        edgecolors="white", linewidth=2,
+    )
+
+    ax.set(title=title, xlabel=r"$m$", xticks=display_m_values, yticks=display_ell_values, aspect=1)
+
+    # Label non-zero coefficients
+    non_zero = ~np.isclose(np.nan_to_num(magnitudes), 0)
+    for ell_index, m_index in np.argwhere(non_zero):
+        ax.text(
+            display_m_values[m_index], display_ell_values[ell_index],
+            f"{magnitudes[ell_index, m_index]:.2g}",
+            ha="center", va="center",
+        )
+
+axes[0].invert_yaxis()
+axes[0].set_ylabel(r"$\ell$")
+
+fig.colorbar(image, ax=axes, label="Magnitude", orientation="horizontal", shrink=0.7)
+
+fig.tight_layout(rect=[0, 0.3, 1, 1])
+plt.show()
+
+# %% [markdown]
 # ## Transforming back to the sphere
 #
 # The inverse transform evaluates the solution at the original MW sample locations.
