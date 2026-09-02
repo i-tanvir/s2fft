@@ -206,7 +206,32 @@ ax.pcolormesh(
     transform=ccrs.PlateCarree(),
     cmap="viridis",
 )
-
 ax.set_title(r"Solution $u(\theta,\phi)$")
+
 fig.tight_layout()
 plt.show()
+
+# %% [markdown]
+# ## Checking the numerical accuracy
+#
+# Finally, we compare the recovered solution with the exact solution. We also check how closely
+# the recovered coefficients satisfy Poisson's equation. In harmonic space, the residual is
+#
+# $$
+# r_{\ell m} = -\ell (\ell+1) u_{\ell m} - f_{\ell m}.
+# $$
+#
+# Since the test problem is band-limited and the MW sampling theorem applies, both the solution
+# error and the residual should be close to machine precision.
+
+# %%
+absolute_error = np.abs(solution - exact_solution)
+
+# Apply the spherical Laplacian to the recovered solution coefficients
+laplacian_solution_flm = -laplacian_eigenvalues * solution_flm
+
+maximum_solution_error = np.max(absolute_error)
+maximum_spectral_residual = np.max(np.abs(laplacian_solution_flm - source_flm))
+
+print(f"Maximum solution error: {maximum_solution_error:.2e}")
+print(f"Maximum spectral residual: {maximum_spectral_residual:.2e}")
