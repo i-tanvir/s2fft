@@ -44,9 +44,9 @@ and then running that cell.
 # longitude across the sphere.
 #
 # We first compute the two coordinate derivatives $\partial f/\partial\theta$ and
-# $\partial f/\partial\phi$. These derivatives are also fundamental building blocks for
+# $\partial f / \partial\phi$. These derivatives are also fundamental building blocks for
 # [spectral methods](https://en.wikipedia.org/wiki/Spectral_method) used to solve partial
-# differential equations on the sphere.
+# differential equations on the sphere, with applications in atmospheric and ocean modelling.
 
 
 # %%
@@ -69,21 +69,19 @@ sampling = "mw"
 # We use the real-valued signal
 #
 # $$
-# f(\theta,\phi)
-# = \sin\theta\cos\phi + \frac{1}{2} \left(3\cos^{2}\theta-1 \right).
+# f(\theta,\phi) = \sin\theta\cos\phi + \frac{1}{2} \left(3\cos^{2}\theta-1 \right).
 # $$
 #
-# These terms contain spherical harmonic modes of degrees one and two, so the signal has no harmonic
-# content above degree two and is band-limited. Its exact coordinate derivatives are:
+# The first and second terms contain spherical harmonic modes of degrees one and two,
+# respectively, so the signal has no harmonic content above degree two and is band-limited.
+# Its exact coordinate derivatives are:
 #
 # $$
-# \frac{\partial f}{\partial \theta}
-# = \cos\theta \cos\phi - 3 \sin\theta \cos\theta,
+# \frac{\partial f}{\partial \theta} = \cos\theta \cos\phi - 3 \sin\theta \cos\theta,
 # $$
 #
 # $$
-# \frac{\partial f}{\partial \phi}
-# = -\sin\theta \sin\phi.
+# \frac{\partial f}{\partial \phi} = -\sin\theta \sin\phi.
 # $$
 
 # %%
@@ -143,8 +141,7 @@ flm = np.asarray(
 # Therefore,
 #
 # $$
-# \frac{\partial}{\partial\phi}Y_{\ell m}(\theta,\phi)
-# = im Y_{\ell m}(\theta,\phi).
+# \frac{\partial}{\partial\phi}Y_{\ell m}(\theta,\phi) = im Y_{\ell m}(\theta,\phi).
 # $$
 #
 # Hence, the longitude derivative of the signal can be computed directly in harmonic space by
@@ -180,8 +177,7 @@ longitude_derivative = np.asarray(
 # where the coupling factor is
 #
 # $$
-# \epsilon_{\ell m}
-# = \sqrt{\frac{\ell^{2}-m^{2}}{4\ell^{2}-1}}.
+# \epsilon_{\ell m} = \sqrt{\frac{\ell^{2}-m^{2}}{4\ell^{2}-1}}.
 # $$
 #
 # Applying this relation to the harmonic expansion and collecting the coefficient of each
