@@ -20,7 +20,7 @@ You can do this by adding a cell to the top of the notebook with the following c
 
 .. code-block:: bash
 
-    !pip install s2fft &> /dev/null
+    !pip install cartopy s2fft &> /dev/null
 
 and then running that cell.
 """
@@ -38,7 +38,7 @@ and then running that cell.
 # + \boldsymbol{e}_{\phi} \frac{1}{\sin \theta} \frac{\partial f}{\partial \phi},
 # $$
 #
-# where $\boldsymbol{e}*{\theta}$ and $\boldsymbol{e}*{\phi}$ are unit vectors in the
+# where $\boldsymbol{e}_{\theta}$ and $\boldsymbol{e}_{\phi}$ are unit vectors in the
 # colatitude and longitude directions, respectively. The factor $1/\sin\theta$
 # accounts for the variation in physical distance associated with a change in
 # longitude across the sphere.
@@ -191,6 +191,10 @@ longitude_derivative = np.asarray(
 # Thus, the coefficient at degree $\ell$ receives contributions from the original coefficients
 # at degrees $\ell-1$ and $\ell+1$. A more detailed derivation is given in the [SpeedyWeather documentation on meridional derivatives](https://speedyweather.github.io/SpeedyWeatherDocumentation/dev/spectral_transform#Meridional-derivative).
 #
+# For a general signal with non-zero coefficients at the highest represented degree $\ell=L-1$, the recurrence
+# can generate a contribution at degree $\ell=L$. In that case, the working band-limit must be increased
+# before applying the recurrence.
+#
 # We reconstruct the scaled derivative and divide by $\sin\theta$ to recover
 # $\frac{\partial f}{\partial\theta}$. The final MW ring lies at the south pole, where this coordinate
 # derivative is undefined in general, so it is left blank.
@@ -203,9 +207,11 @@ epsilon = np.sqrt(
     np.maximum(ell_values**2 - m_values**2, 0) / np.maximum(4 * ell_values**2 - 1, 1)
 )
 
-# For each degree ell, collect contributions from neighbouring degrees, ell-1 and ell+1
+# Align each output degree with the neighbouring input degree used in the recurrence
 scaled_colatitude_derivative_flm = np.zeros_like(flm)
+# Target degrees ell = 1, ..., L-1 receive contributions from degree ell-1
 scaled_colatitude_derivative_flm[1:] += (ell_values[1:] - 1) * epsilon[1:] * flm[:-1]
+# Target degrees ell = 0, ..., L-2 receive contributions from degree ell+1
 scaled_colatitude_derivative_flm[:-1] -= (ell_values[:-1] + 2) * epsilon[1:] * flm[1:]
 
 scaled_colatitude_derivative = np.asarray(
@@ -266,6 +272,7 @@ for ax, magnitudes, title in zip(axes, coefficient_magnitudes, titles):
     )
     ax.set(title=title, xlabel=r"$m$", xticks=display_m_values, yticks=display_ell_values, aspect=1)
 
+    # Label non-zero coefficients
     non_zero = ~np.isclose(np.nan_to_num(magnitudes), 0)
     for ell_index, m_index in np.argwhere(non_zero):
         ax.text(
