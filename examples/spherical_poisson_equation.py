@@ -141,4 +141,20 @@ ax.set_title(r"Source $f(\theta,\phi)$")
 
 fig.tight_layout()
 plt.show()
+
+# %% [markdown]
+# ## Transforming the source to harmonic space
+#
+# The forward transform decomposes the sampled source into spherical harmonic coefficients
+# $f_{\ell m}$.
+
 # %%
+source_flm = np.asarray(
+    s2fft.forward(
+        source,
+        L=L,
+        sampling=sampling,
+        method="jax",
+        reality=True,
+    )
+)
