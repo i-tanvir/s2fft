@@ -50,7 +50,7 @@ and then running that cell.
 # Poisson equations on the sphere arise in many settings, including geophysics, astrophysics, and fluid dynamics.
 
 # %% [markdown]
-# ## Solving in harmonic space
+# ## Harmonic space
 #
 # Spherical harmonics are eigenfunctions of the Laplace–Beltrami operator:
 #
@@ -190,3 +190,23 @@ solution = np.asarray(
         reality=True,
     )
 )
+
+# %% [markdown]
+# ## Visualising the solution
+#
+# The spectral solution should agree with the exact solution.
+
+# %%
+fig, ax = plt.subplots(
+    figsize=(6, 3), subplot_kw={"projection": ccrs.Mollweide()},
+)
+
+ax.pcolormesh(
+    longitude_grid, latitude_grid, solution,
+    transform=ccrs.PlateCarree(),
+    cmap="viridis",
+)
+
+ax.set_title(r"Solution $u(\theta,\phi)$")
+fig.tight_layout()
+plt.show()
