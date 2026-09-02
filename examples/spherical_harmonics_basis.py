@@ -21,7 +21,7 @@ You can do this by adding a cell to the top of the notebook with the following c
 
 .. code-block:: bash
 
-    !pip install s2fft &> /dev/null
+    !pip install cartopy s2fft &> /dev/null
 
 and then running that cell.
 """
@@ -49,13 +49,13 @@ and then running that cell.
 # A spherical harmonic can be written as
 #
 # $$
-# Y_{\ell m}(\theta,\phi)
-# = N_{\ell m} P_{\ell}^m(\cos\theta) \exp(i m\phi),
+# Y_{\ell m}(\theta,\phi) = N_{\ell m} P_{\ell}^m(\cos\theta) \exp(i m\phi),
 # $$
 #
-# where $P_{\ell}^m$ is an [associated Legendre polynomial](https://en.wikipedia.org/wiki/Associated_Legendre_polynomials)
-# and $N_{\ell m}$ is a normalisation constant. The factor $\exp(i m\phi)$ means
-# that spherical harmonics are generally complex-valued.
+# where $N_{\ell m}$ is a normalisation constant, $P_{\ell}^{m}$ is an
+# [associated Legendre polynomial](https://en.wikipedia.org/wiki/Associated_Legendre_polynomials)
+# controlling variation with colatitude, and $\exp(i m\phi)$ controls variation with
+# longitude. Consequently, spherical harmonics are generally complex-valued.
 
 # %% [markdown]
 # ## Orthonormality
@@ -72,9 +72,7 @@ and then running that cell.
 # For two square-integrable functions $f$ and $g$, the inner product on the sphere is
 #
 # $$
-# \langle f,g\rangle
-# = \int_{\mathbb{S}^{2}}
-# f(\theta,\phi) g^{*}(\theta,\phi) \ \mathrm{d}\Omega.
+# \langle f,g\rangle = \int_{\mathbb{S}^{2}} f(\theta,\phi) g^{*}(\theta,\phi) \ \mathrm{d}\Omega.
 # $$
 #
 # Here, $*$ denotes complex conjugation.
@@ -83,8 +81,7 @@ and then running that cell.
 #
 # $$
 # \langle Y_{\ell m},Y_{\ell' m'}\rangle
-# = \int_{\mathbb{S}^{2}}
-# Y_{\ell m}(\theta,\phi) Y^{*}_{\ell' m'}(\theta,\phi) \ \mathrm{d}\Omega
+# = \int_{\mathbb{S}^{2}} Y_{\ell m}(\theta,\phi) Y^{*}_{\ell' m'}(\theta,\phi) \ \mathrm{d}\Omega
 # = \delta_{\ell \ell'} \delta_{m m'}.
 # $$
 #
@@ -108,15 +105,21 @@ and then running that cell.
 # where orthonormality allows each coefficient to be isolated by an inner product:
 #
 # $$
-# f_{\ell m}
-# = \langle f,Y_{\ell m}\rangle
-# = \int_{\mathbb{S}^{2}}
-# f(\theta,\phi) Y^{*}_{\ell m}(\theta,\phi) \ \mathrm{d}\Omega.
+# f_{\ell m} = \langle f,Y_{\ell m}\rangle
+# = \int_{\mathbb{S}^{2}} f(\theta,\phi) Y^{*}_{\ell m}(\theta,\phi) \ \mathrm{d}\Omega.
 # $$
 #
 # Computing the coefficients $f_{\ell m}$ is called the forward spherical harmonic transform,
 # or spherical harmonic analysis. Reconstructing $f$ from these coefficients is called the
 # inverse spherical harmonic transform, or spherical harmonic synthesis.
+#
+# For a real-valued signal, the coefficients satisfy the conjugate-symmetry relation
+#
+# $$
+# f_{\ell,-m} = (-1)^{m} f_{\ell m}^{*}.
+# $$
+#
+# An individual spherical harmonic is generally complex-valued, so we set `reality=False`.
 
 # %% [markdown]
 # ## Band-limited signals
@@ -126,9 +129,7 @@ and then running that cell.
 # the finite sum
 #
 # $$
-# f(\theta,\phi)
-# = \sum_{\ell=0}^{L-1} \sum_{m=-\ell}^{\ell}
-# f_{\ell m} Y_{\ell m}(\theta,\phi).
+# f(\theta,\phi) = \sum_{\ell=0}^{L-1} \sum_{m=-\ell}^{\ell} f_{\ell m} Y_{\ell m}(\theta,\phi).
 # $$
 #
 # The largest degree represented is therefore $L-1$. Increasing $L$ allows finer angular
@@ -160,8 +161,7 @@ sampling = "mw"
 # its negative and positive values can be represented by standard non-negative array indices:
 #
 # $$
-# f_{\ell m} \quad \longleftrightarrow \quad
-# \mathtt{flm[\ell,\ m+L-1]}.
+# f_{\ell m} \quad \longleftrightarrow \quad \mathtt{flm[\ell,\ m+L-1]}.
 # $$
 #
 # Thus, $m=0$ is stored in the central column with index $L-1$. The rectangular array also contains
@@ -181,17 +181,16 @@ flm = np.zeros(flm_shape, dtype=np.complex128)
 flm[ell, m + L - 1] = 1.0
 
 # %% [markdown]
-# Since $f_{\ell m}=1$ is the only non-zero coefficient, the spherical harmonic
-# expansion reduces to
+# Since $f_{\ell m}=1$ is the only non-zero coefficient, the spherical harmonic expansion
+# reduces to
 #
 # $$
-# f(\theta,\phi)
-# = 1 \cdot Y_{\ell m}(\theta,\phi)
-# = Y_{\ell m}(\theta,\phi).
+# f(\theta,\phi) = 1 \cdot Y_{\ell m}(\theta,\phi) = Y_{\ell m}(\theta,\phi).
 # $$
 #
-# The inverse transform therefore evaluates the chosen basis function at the
-# MW sample locations.
+# The inverse transform therefore evaluates the chosen basis function at the MW sample locations.
+#
+# An individual spherical harmonic is generally complex-valued, so we set `reality=False`.
 
 # %%
 y_ell_m = s2fft.inverse(
@@ -223,9 +222,8 @@ plt.show()
 # %% [markdown]
 # ## Visualising the basis
 #
-# We can repeat the same construction, setting one coefficient to one and all
-# remaining coefficients to zero, for every valid degree and order $(\ell,m)$
-# up to a chosen maximum degree.
+# We can repeat the same construction, setting one coefficient to one and all remaining
+# coefficients to zero, for every valid degree and order $(\ell,m)$ up to a chosen maximum degree.
 
 # %%
 max_degree = 3
@@ -278,10 +276,7 @@ plt.show()
 # To demonstrate this, we construct a signal with three non-zero coefficients:
 #
 # $$
-# f(\theta, \phi)
-# = Y_{0,0}(\theta,\phi)
-# + 0.8Y_{2,1}(\theta,\phi)
-# - 0.4Y_{3,-2}(\theta,\phi).
+# f(\theta, \phi) = Y_{0,0}(\theta,\phi) + 0.8Y_{2,1}(\theta,\phi) - 0.4Y_{3,-2}(\theta,\phi).
 # $$
 # 
 # The inverse transform evaluates this weighted sum at the MW sampling nodes.
@@ -301,7 +296,8 @@ signal = s2fft.inverse(
 )
 
 # %% [markdown]
-# As before, we visualise its real part.
+# These coefficients do not satisfy conjugate symmetry, so the resulting signal is complex-valued.
+# We visualise its real part below.
 
 # %%
 fig, ax = plt.subplots(
@@ -321,8 +317,8 @@ plt.show()
 # %% [markdown]
 # ## Recovering the spherical harmonic coefficients
 #
-# Starting from the sampled signal, the forward transform recovers its
-# spherical harmonic coefficients, which are the weights of the basis functions.
+# Starting from the sampled signal, the forward transform recovers its spherical harmonic
+# coefficients, which are the weights of the basis functions.
 
 # %%
 recovered_flm = s2fft.forward(
