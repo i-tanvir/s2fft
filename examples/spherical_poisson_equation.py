@@ -70,4 +70,17 @@ and then running that cell.
 # The constant mode $\ell = 0$ has eigenvalue zero because the Laplacian of a constant is zero.
 # A solution therefore exists only if $f_{00}=0$, meaning that the source has zero mean. Since adding
 # any constant to $u$ gives another solution, we select the zero-mean solution by setting $u_{00} = 0$.
+
 # %%
+import jax
+
+jax.config.update("jax_enable_x64", True)
+
+import cartopy.crs as ccrs
+import numpy as np
+from matplotlib import pyplot as plt
+
+import s2fft
+
+L = 32
+sampling = "mw"
