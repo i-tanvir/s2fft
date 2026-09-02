@@ -47,7 +47,7 @@ and then running that cell.
 # + \frac{1}{\sin^{2}\theta} \frac{\partial^{2}u}{\partial\phi^{2}}.
 # $$
 #
-# Poisson equations on the sphere arise in many settings, including geophysics, astrophysics, and fluid dynamics.
+# Poisson's equation on the sphere arise in many settings, including geophysics, astrophysics, and fluid dynamics.
 
 # %% [markdown]
 # ## Harmonic space
@@ -98,17 +98,19 @@ sampling = "mw"
 # u(\theta,\phi) = \sin\theta \cos\phi + \frac{1}{2} \left(3\cos^{2}\theta-1\right).
 # $$
 #
-# The two terms are spherical harmonic modes of degrees $\ell = 1$ and $\ell = 2$, respectively. Since
-# the spherical Laplacian acts on a mode of degree $\ell$ as
+# The first term contains only spherical harmonics of degree $\ell = 1$, while the second contains
+# only degree $\ell = 2$. Since the spherical Laplacian acts on a mode of degree $\ell$ as
 #
 # $$
 # \Delta_{\mathbb{S}^2} Y_{\ell m} = -\ell (\ell+1) Y_{\ell m},
 # $$
 #
-# it multiplies these terms by $-2$ and $-6$. The corresponding source is therefore
+# it multiplies the first term by $-2$ and the second by $-6$.
+# 
+# The corresponding source is therefore
 #
 # $$
-# f(\theta,\phi) = -2 \sin\theta \cos\phi - 3\left(3\cos^{2}\theta-1\right).
+# f(\theta,\phi) = -2 \sin\theta \cos\phi - 3 \left(3\cos^{2}\theta-1\right).
 # $$
 #
 # Both $u$ and $f$ have zero mean and contain only degrees up to $\ell = 2$. They can therefore be
@@ -170,10 +172,10 @@ source_flm = np.asarray(
 
 # %%
 ell_values = np.arange(L)[:, None]
-laplacian_eigenvalues = ell_values * (ell_values + 1)
+laplacian_eigenvalues = -ell_values * (ell_values + 1)
 
 solution_flm = np.zeros_like(source_flm)
-solution_flm[1:] = -source_flm[1:] / laplacian_eigenvalues[1:]
+solution_flm[1:] = source_flm[1:] / laplacian_eigenvalues[1:]
 
 # %% [markdown]
 # ## Visualising the coefficient operation
@@ -285,7 +287,7 @@ plt.show()
 absolute_error = np.abs(solution - exact_solution)
 
 # Apply the spherical Laplacian to the recovered solution coefficients
-laplacian_solution_flm = -laplacian_eigenvalues * solution_flm
+laplacian_solution_flm = laplacian_eigenvalues * solution_flm
 
 maximum_solution_error = np.max(absolute_error)
 maximum_spectral_residual = np.max(np.abs(laplacian_solution_flm - source_flm))
