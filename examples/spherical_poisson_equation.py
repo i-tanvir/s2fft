@@ -111,3 +111,34 @@ sampling = "mw"
 #
 # Both $u$ and $f$ have zero mean and contain only degrees up to $\ell = 2$. They can therefore be
 # represented exactly at any band-limit $L \geq 3$, up to machine precision.
+
+# %%
+theta_values = s2fft.sampling.s2_samples.thetas(L, sampling)
+phi_values = s2fft.sampling.s2_samples.phis_equiang(L, sampling)
+theta_grid, phi_grid = np.meshgrid(theta_values, phi_values, indexing="ij")
+longitude_grid = np.rad2deg(phi_grid)
+latitude_grid = 90 - np.rad2deg(theta_grid)
+
+exact_solution = np.sin(theta_grid) * np.cos(phi_grid) + 0.5 * (3 * np.cos(theta_grid)**2 - 1)
+source = -2 * np.sin(theta_grid) * np.cos(phi_grid) - 3 * (3 * np.cos(theta_grid)**2 - 1)
+
+# %% [markdown]
+# ## Visualising the source
+#
+# The source $f$ is the input to the Poisson problem.
+
+# %%
+fig, ax = plt.subplots(
+    figsize=(6, 3), subplot_kw={"projection": ccrs.Mollweide()},
+)
+
+ax.pcolormesh(
+    longitude_grid, latitude_grid, source,
+    transform=ccrs.PlateCarree(),
+    cmap="viridis",
+)
+ax.set_title(r"Source $f(\theta,\phi)$")
+
+fig.tight_layout()
+plt.show()
+# %%
