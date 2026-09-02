@@ -37,10 +37,12 @@ and then running that cell.
 # $$
 #
 # where $f(\theta,\phi)$ is a known source and $\Delta_{\mathbb{S}^2}$ is the [Laplace–Beltrami operator](https://en.wikipedia.org/wiki/Laplace%E2%80%93Beltrami_operator),
-# the spherical counterpart of the usual Laplacian. In spherical coordinates,
+# the spherical counterpart of the usual Laplacian.
+# 
+# In spherical coordinates,
 #
 # $$
-# \Delta_{\mathbb{S}^2} u
+# \Delta_{\mathbb{S}^{2}} u
 # = \frac{1}{\sin\theta} \frac{\partial}{\partial\theta} \left(\sin\theta \frac{\partial u}{\partial\theta}\right)
 # + \frac{1}{\sin^{2}\theta} \frac{\partial^{2}u}{\partial\phi^{2}}.
 # $$
@@ -152,6 +154,36 @@ plt.show()
 source_flm = np.asarray(
     s2fft.forward(
         source,
+        L=L,
+        sampling=sampling,
+        method="jax",
+        reality=True,
+    )
+)
+
+# %% [markdown]
+# ## Solving in harmonic space
+#
+# We divide each coefficient with $\ell\geq 1$ by the corresponding Laplacian eigenvalue.
+# The coefficient array is initially zero, so its $\ell=0$ row remains zero and selects the
+# zero-mean solution.
+
+# %%
+ell_values = np.arange(L)[:, None]
+laplacian_eigenvalues = ell_values * (ell_values + 1)
+
+solution_flm = np.zeros_like(source_flm)
+solution_flm[1:] = -source_flm[1:] / laplacian_eigenvalues[1:]
+
+# %% [markdown]
+# ## Transforming back to the sphere
+#
+# The inverse transform evaluates the solution at the original MW sample locations.
+
+# %%
+solution = np.asarray(
+    s2fft.inverse(
+        solution_flm,
         L=L,
         sampling=sampling,
         method="jax",
